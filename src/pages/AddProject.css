@@ -1,0 +1,36 @@
+.add-project-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    min-height: 100vh;
+    box-sizing: border-box;
+    animation: fadeIn 0.4s ease;
+}
+
+.page-title {
+    font-size: 36px;
+    margin-bottom: 20px;
+    animation: slideInFromTop 0.5s ease;
+}
+
+@media (max-width: 768px) {
+  .add-project-page {
+    padding: 15px;
+  }
+
+  .page-title {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .add-project-page {
+    padding: 10px;
+  }
+
+  .page-title {
+    font-size: 22px;
+    margin-bottom: 15px;
+  }
+}

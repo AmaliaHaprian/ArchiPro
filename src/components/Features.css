@@ -1,0 +1,31 @@
+.features {
+    background-color: #ADD3FF;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 40px 20px;
+}
+
+.feature-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+}
+
+.feature-text {
+    width: 50%;
+    box-sizing: border-box;
+    font-size: 40px;
+}
+
+.feature-image {
+    width: 50%;
+}
+
+.feature-card-text {
+    padding: 15px;
+    box-sizing: border-box;
+    font-size: 32px;
+    border-top: 2px solid rgb(107, 104, 104);
+}

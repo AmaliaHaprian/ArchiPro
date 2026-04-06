@@ -1,0 +1,402 @@
+.design-page {
+    display: flex;
+    flex-direction: row;
+    min-height: 100vh;
+    background: #c7d7ea;
+    animation: fadeIn 0.4s ease;
+}
+
+.design-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    animation: slideInFromRight 0.5s ease;
+}
+
+.back-button {
+    align-self: flex-start;
+    background: none;
+    border: none;
+    color: #0066cc;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 16px;
+    margin-bottom: 20px;
+    padding: 0;
+    transition: all 0.3s ease;
+}
+
+.back-button:hover {
+    color: #0052a3;
+    transform: translateX(-5px);
+}
+
+.design-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.design-tabs {
+    display: flex;
+    gap: 10px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 0;
+}
+
+.tab-button {
+    background-color: transparent;
+    border: none;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    position: relative;
+}
+
+.tab-button:hover {
+    color: #333;
+    transform: translateY(-2px);
+}
+
+.tab-button.active {
+    color: #0066cc;
+    border-bottom-color: #0066cc;
+    animation: slideInFromTop 0.3s ease;
+}
+
+.design-content {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 20px;
+}
+
+.files-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.files-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.files-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.upload-file-button {
+    background-color: #f0f0f0;
+    color: #333;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.upload-file-button:hover {
+    background-color: #e0e0e0;
+    border-color: #999;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.files-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.file-card {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    transition: all 0.2s;
+    animation: scaleInGently 0.3s ease;
+}
+
+.file-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    border-color: #0066cc;
+}
+
+.file-info {
+    flex: 1;
+}
+
+.file-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+.file-details {
+    font-size: 12px;
+    color: #999;
+    margin-top: 6px;
+}
+
+.file-delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: rgba(255, 0, 0, 0.8);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+    padding: 0;
+}
+
+.file-delete-btn:hover {
+    background-color: rgba(255, 0, 0, 1);
+}
+
+.no-files-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #999;
+    padding: 30px 20px;
+    font-style: italic;
+    font-size: 14px;
+}
+
+.design-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.action-button {
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+    animation: slideInFromRight 0.4s ease;
+}
+
+.action-button:hover {
+    background-color: #357abd;
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(74, 144, 226, 0.3);
+}
+
+.design-panel {
+    background-color: #f0f4ff;
+    border: 1px solid #c0d0ff;
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    animation: slideInFromRight 0.5s ease;
+    transition: all 0.3s ease;
+}
+
+.design-panel:hover {
+    border-color: #0066cc;
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.1);
+}
+
+.design-panel h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.panel-textarea {
+    resize: vertical;
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.panel-textarea:focus {
+    outline: none;
+    border-color: #0066cc;
+    background-color: #fff;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .files-list {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .design-content {
+        grid-template-columns: 1fr 220px;
+        gap: 15px;
+    }
+
+    .design-main {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .design-page {
+        flex-direction: column;
+    }
+
+    .design-main {
+        padding: 12px;
+    }
+
+    .design-content {
+        grid-template-columns: 1fr;
+    }
+
+    .design-tabs {
+        flex-wrap: wrap;
+    }
+
+    .tab-button {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+
+    .files-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .upload-file-button {
+        width: 100%;
+        text-align: center;
+    }
+
+    .files-list {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 12px;
+    }
+
+    .file-card {
+        padding: 12px;
+    }
+
+    .action-button {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
+    .panel-textarea {
+        min-height: 80px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .design-main {
+        padding: 8px;
+    }
+
+    .back-button {
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+
+    .design-tabs {
+        gap: 5px;
+    }
+
+    .tab-button {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .files-list {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 8px;
+    }
+
+    .file-card {
+        padding: 10px;
+    }
+
+    .file-name {
+        font-size: 12px;
+    }
+
+    .file-details {
+        font-size: 10px;
+    }
+
+    .file-delete-btn {
+        width: 22px;
+        height: 22px;
+        font-size: 12px;
+    }
+
+    .upload-file-button {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+
+    .action-button {
+        font-size: 11px;
+        padding: 8px 10px;
+    }
+
+    .design-panel h4 {
+        font-size: 12px;
+    }
+
+    .panel-textarea {
+        min-height: 70px;
+        font-size: 10px;
+        padding: 8px;
+    }
+
+    .files-header h3 {
+        font-size: 16px;
+    }
+}

@@ -1,0 +1,342 @@
+.project-top-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid black;
+    border-radius: 10px;
+    margin-top: 30px;
+    width: 100%;
+    height: 300px;
+}
+
+.project-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.project-header h1 {
+    font-size: 48px;
+    margin: 10px;
+}
+.project-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    margin-right: 10px;
+}
+.project-dates {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 20px;
+}
+
+.start-date, .due-date {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.start-date img, .due-date img {
+    width: 100px;
+    height: 100px;
+}
+.project-details {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-left: 10px;
+}
+
+.edit-button, .delete-button {
+    color: white;
+    font-size: 28px;
+}
+
+.edit-button {
+    background-color: green;
+}
+
+.delete-button {
+    background-color: red;
+}
+
+.progress-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: 28px;
+    margin-right: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .project-top-container {
+        height: 280px;
+    }
+
+    .project-header h1 {
+        font-size: 40px;
+    }
+
+    .start-date img, .due-date img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .project-dates {
+        font-size: 18px;
+    }
+
+    .edit-button, .delete-button {
+        font-size: 24px;
+    }
+
+    .progress-area {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .project-top-container {
+        height: 260px;
+    }
+
+    .project-header h1 {
+        font-size: 34px;
+    }
+
+    .start-date img, .due-date img {
+        width: 70px;
+        height: 70px;
+    }
+
+    .project-dates {
+        font-size: 16px;
+    }
+
+    .edit-button, .delete-button {
+        font-size: 20px;
+    }
+
+    .progress-area {
+        font-size: 20px;
+    }
+
+    .start-date h3, .due-date h3 {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .project-top-container {
+        height: auto;
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+
+    .project-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .project-header h1 {
+        font-size: 28px;
+        margin: 0;
+    }
+
+    .project-actions {
+        width: 100%;
+        gap: 10px;
+        margin-right: 0;
+    }
+
+    .start-date img, .due-date img {
+        width: 60px;
+        height: 60px;
+    }
+
+    .project-dates {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-around;
+        font-size: 14px;
+        gap: 10px;
+    }
+
+    .start-date, .due-date {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .project-details {
+        width: 100%;
+        flex-direction: column;
+        gap: 15px;
+        margin-left: 0;
+    }
+
+    .edit-button, .delete-button {
+        font-size: 16px;
+        padding: 8px 16px;
+    }
+
+    .progress-area {
+        width: 100%;
+        font-size: 16px;
+        margin-right: 0;
+    }
+
+    .start-date h3, .due-date h3 {
+        font-size: 14px;
+        margin: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .project-top-container {
+        height: auto;
+        gap: 8px;
+        padding: 8px;
+        margin-top: 10px;
+        border: 1px solid #666;
+    }
+
+    .project-header {
+        flex-direction: column;
+        gap: 6px;
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    .project-header h1 {
+        font-size: 18px;
+        margin: 0;
+        word-break: break-word;
+        line-height: 1.3;
+    }
+
+    .project-actions {
+        width: 100%;
+        gap: 6px;
+        margin-right: 0;
+        flex-wrap: wrap;
+    }
+
+    .edit-button, .delete-button {
+        font-size: 12px;
+        padding: 6px 12px;
+        flex: 1;
+        min-width: 80px;
+    }
+
+    .start-date img, .due-date img {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+    }
+
+    .project-dates {
+        width: 100%;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 11px;
+    }
+
+    .start-date, .due-date {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 4px;
+        width: 100%;
+    }
+
+    .project-details {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+        margin-left: 0;
+    }
+
+    .progress-area {
+        width: 100%;
+        font-size: 12px;
+        margin-right: 0;
+        gap: 4px;
+    }
+
+    .start-date h3, .due-date h3 {
+        font-size: 11px;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .progress-fill {
+        height: 12px;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 12px;
+    }
+
+    .progress-area p {
+        font-size: 11px;
+        margin: 0;
+    }
+}
+
+@media (max-width: 360px) {
+    .project-top-container {
+        padding: 6px;
+        gap: 6px;
+        margin-top: 8px;
+    }
+
+    .project-header h1 {
+        font-size: 16px;
+    }
+
+    .edit-button, .delete-button {
+        font-size: 11px;
+        padding: 4px 8px;
+        min-width: 70px;
+    }
+
+    .start-date img, .due-date img {
+        width: 35px;
+        height: 35px;
+    }
+
+    .project-dates {
+        font-size: 10px;
+        gap: 4px;
+    }
+
+    .start-date h3, .due-date h3 {
+        font-size: 10px;
+    }
+
+    .progress-area {
+        font-size: 10px;
+        gap: 3px;
+    }
+
+    .progress-bar {
+        height: 10px;
+    }
+
+    .progress-fill {
+        height: 10px;
+    }
+}

@@ -1,0 +1,5 @@
+to run jest test coverage: npm run test:coverage
+to run playwright tests: npx playwright test              # Run all browsers
+npx playwright test --headed     # Run with visible browser
+npx playwright test --ui         # Use UI mode
+npx playwright show-report       # View HTML report after running
