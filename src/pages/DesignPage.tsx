@@ -3,7 +3,6 @@ import { useState } from 'react';
 import type { Project, DesignFile } from '../models/Project';
 import './DesignPage.css';
 import SideBar from '../components/SideBar';
-import ShadowPath from './ShadowPath';
 
 type FileCategory = 'Sketches' | 'Plans' | 'Renders';
 

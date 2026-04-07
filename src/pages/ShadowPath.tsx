@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { Project } from '../models/Project';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -15,7 +14,7 @@ function ShadowPath({projects} : {projects: Project[]}) {
         <div className="shadow-path-page">
             <p onClick={() => navigate(`/project/${projectId}/design`)}>Back to design</p>
             <aside className="shadow-path-sidebar">
-                <h3>Enter coordinated</h3>
+                <h3>Enter coordinates</h3>
                 <input type="text" placeholder="Latitude" />
                 <input type="text" placeholder="Longitude" />
                 <input type="file">Upload render</input>

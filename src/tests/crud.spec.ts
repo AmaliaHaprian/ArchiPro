@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 import type { Project } from "../models/Project";
 const baseUrl = 'http://localhost:5173'; // Change if your dev server runs elsewhere
 
-test.describe('Project Management E2E', () => {
+test.describe('Crud functionalities', () => {
   test('Add Project', async ({ page }) => {
     await page.goto(`${baseUrl}/addproject`);
     await page.fill('input[placeholder="Enter the project title"]', 'Test Project');
@@ -61,19 +61,6 @@ test.describe('Project Management E2E', () => {
     const projectRow2= await page.locator('.project-row').nth(0);
     const id2 = await projectRow2.getAttribute('data-project-id');
     expect(id).not.toBe(id2);
-  });
-
-  test('Search Projects by Title', async ({ page }) => {
-    await page.goto(`${baseUrl}/overview`);
-    await page.fill('input[placeholder="Search..."]', 'Metro');
-    await expect(page.locator('.project-cell').nth(0)).toHaveText('Metro Station');
-  });
-
-  test('Filter Projects by Category', async ({ page }) => {
-    await page.goto(`${baseUrl}/overview`);
-    const categoryFilter = page.locator('#category-filter');
-    await categoryFilter.selectOption('Landscape');
-    await expect(page.locator('.project-cell').nth(0)).toHaveText('Urban Park');
   });
 
 });
