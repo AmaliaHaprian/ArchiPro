@@ -112,7 +112,7 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/overview" element={<Overview projects={projects} />} />
       <Route path="/addproject" element={<AddProject onAddProject={addProject} />} />
-      <Route path="/project/:id" element={<ProjectPage projects={projects} onDeleteProject={deleteProject}/>} />
+      <Route path="/project/:id" element={<ProjectPage projects={projects} onDeleteProject={deleteProject} onUpdateProject={updateProject}/>} />
       <Route path="/project/:projectId/site-analysis" element={<SiteAnalysisPage projects={projects} updateProject={updateProject}/>} />
       <Route path="/project/:projectId/research" element={<ResearchPage projects={projects} updateProject={updateProject}/>} />
       <Route path="/project/:projectId/design" element={<DesignPage projects={projects} updateProject={updateProject}/>} />
