@@ -83,7 +83,7 @@ function App() {
         },]);
 
   const addProject = (project: Project) => {
-    setProjects([project, ...projects]);
+    setProjects((prevProjects) => [project, ...prevProjects]);
   }
 
   const deleteProject = (projectId: string) => {
@@ -110,7 +110,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/overview" element={<Overview projects={projects} />} />
+      <Route path="/overview" element={<Overview projects={projects} onAddProject={addProject} />} />
       <Route path="/addproject" element={<AddProject onAddProject={addProject} />} />
       <Route path="/project/:id" element={<ProjectPage projects={projects} onDeleteProject={deleteProject} onUpdateProject={updateProject}/>} />
       <Route path="/project/:projectId/site-analysis" element={<SiteAnalysisPage projects={projects} updateProject={updateProject}/>} />

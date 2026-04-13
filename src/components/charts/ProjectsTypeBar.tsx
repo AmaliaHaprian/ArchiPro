@@ -21,6 +21,10 @@ const ProjectsByTypeBar = ({ projects }: { projects: Project[] }) => {
         else if (entry.type === 'Commercial') color = '#4EB61E';
         else if (entry.type === 'Landscape') color = '#B51B1B';
         else if (entry.type === 'Interior') color = '#F39C12';
+        else if (entry.type === 'Cultural') color = '#8E44AD';
+        else if (entry.type === 'Infrastructure') color = '#3498db';
+        else if (entry.type === 'Urban') color = '#2E8B57';
+
         return { ...entry, color };
     });
 
@@ -35,7 +39,7 @@ const ProjectsByTypeBar = ({ projects }: { projects: Project[] }) => {
         >
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
           <XAxis dataKey="type" axisLine={false} tickLine={false} />
-          <YAxis ticks={[0, 2, 4, 6]} axisLine={false} tickLine={false} />
+          <YAxis type="number" axisLine={false} tickLine={false} />
           <Tooltip cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }} />
           <Bar dataKey="total" radius={[4, 4, 0, 0]} >
             {data.map((entry, index) => (

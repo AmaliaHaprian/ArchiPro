@@ -42,7 +42,7 @@ function StatusDistributionPie({ projects }: { projects: Project[] }) {
             ))}
           </Pie>
           <Tooltip 
-            formatter={(value, name) => [`${value}%`, name]} 
+            formatter={(value) => [`${((value as number) / projects.length * 100).toFixed(2)}%`, 'Percentage']} 
             contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc' }}
           />
           </PieChart>

@@ -11,9 +11,10 @@ import StageBottleneckBar from "../components/charts/StageBottleneckBar";
 import ProjectsByTypeBar from "../components/charts/ProjectsTypeBar";
 import TopCompletionProjects from "../components/charts/TopCompletionProjects";
 import TopRowCards from "../components/charts/TopRowCards";
+import GenerateProject from "../utils/generateProject";
+import { useRef, useEffect } from "react";
 
-
-function Overview({ projects }: { projects: Project[] }) {
+function Overview({ projects, onAddProject }: { projects: Project[]; onAddProject: (project: Project) => void; }) {
     const navigate = useNavigate();
     const [currentPage, setCurrentPage] = useState(1)
     const [searchTerm, setSearchTerm] = useState('');
@@ -23,6 +24,9 @@ function Overview({ projects }: { projects: Project[] }) {
     const [categoryFilter, setCategoryFilter] = useState(() => getCookieValue('categoryFilter', 'All categories'));
     const [statusFilter, setStatusFilter] = useState(() => getCookieValue('statusFilter', 'All statuses'));
     const projectsPerPage = 3;
+
+    const [spamProjects, setSpamProjects] = useState<string>('Start');
+    const spamIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     useUserPreferences(
         { categoryFilter, statusFilter },
@@ -38,6 +42,15 @@ function Overview({ projects }: { projects: Project[] }) {
             if (loaded.theme && loaded.theme !== theme) setTheme(loaded.theme);
         }
     );
+
+    // Cleanup interval on unmount
+    useEffect(() => {
+        return () => {
+            if (spamIntervalRef.current) {
+                clearInterval(spamIntervalRef.current);
+            }
+        };
+    }, []);
 
     const totalPages = Math.ceil(projects.length / projectsPerPage);
     const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
@@ -76,6 +89,19 @@ function Overview({ projects }: { projects: Project[] }) {
         navigate('/addproject');
     }
 
+    const handleSpamProjects = () => {
+        if (spamProjects === 'Start') {
+            setSpamProjects('Stop');
+            spamIntervalRef.current = setInterval(() => {
+                const newProject = GenerateProject();
+                onAddProject(newProject);
+            }, 100);
+        } else {
+            setSpamProjects('Start');
+            clearInterval(spamIntervalRef.current!);
+            spamIntervalRef.current = null;
+        }
+    }
     return (
         <>
         <div className={theme==='light'? 'overview-light': 'overview-dark'}>
@@ -94,6 +120,12 @@ function Overview({ projects }: { projects: Project[] }) {
                         <p>Manage and track your architecture projects. All in one place</p>
                     </div>
                     <div className="header-buttons">
+                        <button className='spam-projects-button'
+                            onClick={handleSpamProjects}
+                            type="button"
+                        >
+                            {spamProjects}
+                        </button>
                         <button 
                             className={`view-toggle-button ${viewMode === 'table' ? 'active' : ''}`}
                             onClick={() => setViewMode('table')}
@@ -173,7 +205,7 @@ function Overview({ projects }: { projects: Project[] }) {
                                     >
                                         {page}
                                     </button>
-                                ))}
+                                )).slice(currentPage - 1, currentPage + 4)}
                             </div>
                             <button
                                 className="pagination-button"

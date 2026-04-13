@@ -5,6 +5,7 @@ import type { CSSProperties } from 'react';
 import SunCalc from 'suncalc';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
+import './ShadowPath.css';
 
 function Model({url}: {url: string | null}) {
     if (!url) return null;
@@ -37,6 +38,7 @@ function ShadowPath({projects} : {projects: Project[]}) {
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
     const [sunPosition, setSunPosition] = useState<[number, number, number]>([15, 10, 15]);
     const [model, setModel] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
      const handleCoordinateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setCoordinates(prev => ({ ...prev, [name]: parseFloat(value) }));
@@ -49,6 +51,13 @@ function ShadowPath({projects} : {projects: Project[]}) {
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            if (!file.name.endsWith('.glb')) {
+                setError('Please upload a .glb file (self-contained model). .gltf files with external buffers are not supported.');
+                setFile(null);
+                setModel(null);
+                return;
+            }
+            setError(null);
             setFile(file);
             setModel(URL.createObjectURL(file));
         }
@@ -73,7 +82,7 @@ function ShadowPath({projects} : {projects: Project[]}) {
     }
 
     return (
-        <div className="shadow-path-page" style={styles.shadowPathPage}>
+        <div className="shadow-path-page">
             <p onClick={() => navigate(`/project/${projectId}/design`)}>Back to design</p>
             <input type="range" 
                 min="0" 
@@ -81,9 +90,9 @@ function ShadowPath({projects} : {projects: Project[]}) {
                 step="0.1"
                 value={time}
                 onChange={handleTimeChange}
-                className="time-slider" style={styles.timeSlider}/>          
-            <div className="shadow-path-content" style={styles.shadowPathContent}>
-                <main className="file-section" style={styles.fileDisplay}>
+                className="time-slider"/>          
+            <div className="shadow-path-content">
+                <main className="file-section">
                     {file ? (
                         <Canvas shadows camera={{ position: [0, 8, 15] }} gl={{ antialias: true }}>
                             <ambientLight intensity={0.6} />
@@ -122,22 +131,23 @@ function ShadowPath({projects} : {projects: Project[]}) {
                         <p>No file uploaded yet</p>
                     )}
                 </main>
-                <aside className="shadow-path-sidebar" style={styles.aside}>
+                <aside className="shadow-path-sidebar">
                     <p>Curent time: {time}:00</p>
                     <p>Enter coordinates</p>
-                    <input type="text" placeholder="Latitude" name="lat" onChange={handleCoordinateChange} style={styles.coordInput} />
-                    <input type="text" placeholder="Longitude" name="lng" onChange={handleCoordinateChange} style={styles.coordInput} />
+                    <input type="text" placeholder="Latitude" name="lat" onChange={handleCoordinateChange} className="coord-input" />
+                    <input type="text" placeholder="Longitude" name="lng" onChange={handleCoordinateChange} className="coord-input" />
                     <label htmlFor="file-input" className="upload-file-button">
                                         Upload Files
                                     </label>
                                     <input
                                         id="file-input"
                                         type="file"
-                                        accept=".glb,.gltf"
+                                        accept=".glb"
                                         onChange={handleFileUpload}
                                         style={{ display: 'none' }}
                                     />
-                    <button onClick={calculateSunPath} style={styles.calculateButton}>
+                    {error && <p style={{ color: 'red', fontSize: '12px', marginTop: '10px' }}>{error}</p>}
+                    <button onClick={calculateSunPath} className='calculate-button'>
                         Calculate shadow path
                     </button>
                 </aside>
@@ -147,58 +157,3 @@ function ShadowPath({projects} : {projects: Project[]}) {
 }
 
 export default ShadowPath;
-
-const styles: Record<string, CSSProperties> = {
-    shadowPathPage: {
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-    },
-    fileDisplay: {
-        padding: '20px',
-        border: '1px solid #ddd',
-        borderRadius: '8px',
-        backgroundColor: '#f9f9f9',
-        width: '70%',
-    },
-    imagePreview: {
-        maxWidth: '100%',
-        height: 'auto',
-        borderRadius: '4px',
-        marginTop: '10px',
-    },
-    shadowPathContent: {
-        display: 'flex',
-        flexDirection: 'row',
-        flex: 1,
-        gap: '20px',
-        padding: '20px',
-    },
-    aside: {
-        display: 'flex',
-        flexDirection: 'column',
-        width: '300px',
-        gap: '10px',
-        fontSize: '36px',
-    },
-    timeSlider: {
-        width: '100%',
-        height: '16px',
-        cursor: 'pointer',
-    },
-    calculateButton: {
-        height: 'auto',
-        fontSize: '24px',
-        cursor: 'pointer',
-        backgroundColor: '#367CCB',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-    },
-    coordInput: {
-        padding: '8px',
-        fontSize: '16px',
-        borderRadius: '4px',
-        border: '1px solid #ccc',
-    }
-};
