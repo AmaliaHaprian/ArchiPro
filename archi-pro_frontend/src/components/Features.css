@@ -1,0 +1,161 @@
+.features {
+    background-color: #ADD3FF;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 40px 20px;
+}
+
+.feature-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+}
+
+.feature-text {
+    width: 50%;
+    box-sizing: border-box;
+    font-size: 40px;
+    line-height: 1.5;
+}
+
+.feature-text h2 {
+    margin: 0 0 15px 0;
+}
+
+.feature-text p {
+    margin: 0;
+}
+
+.feature-image {
+    width: 50%;
+}
+
+.feature-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+}
+
+.feature-card-text {
+    padding: 15px;
+    box-sizing: border-box;
+    font-size: 32px;
+    border-top: 2px solid rgb(107, 104, 104);
+}
+
+.feature-card-text h3 {
+    margin: 0 0 10px 0;
+    font-size: 28px;
+}
+
+.feature-card-text p {
+    margin: 0;
+    font-size: 16px;
+}
+
+@media (max-width: 1024px) {
+    .features {
+        padding: 30px 15px;
+        gap: 15px;
+    }
+    
+    .feature-row {
+        gap: 15px;
+    }
+    
+    .feature-text {
+        font-size: 28px;
+    }
+    
+    .feature-card-text {
+        font-size: 24px;
+        padding: 12px;
+    }
+    
+    .feature-card-text h3 {
+        font-size: 22px;
+    }
+    
+    .feature-card-text p {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 768px) {
+    .features {
+        padding: 25px 15px;
+        gap: 20px;
+    }
+    
+    .feature-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .feature-text {
+        width: 100%;
+        font-size: 24px;
+    }
+    
+    .feature-image {
+        width: 100%;
+    }
+    
+    .feature-row:nth-child(3) {
+        flex-direction: column;
+    }
+    
+    .feature-card-text {
+        font-size: 18px;
+        padding: 15px;
+    }
+    
+    .feature-card-text h3 {
+        font-size: 18px;
+    }
+    
+    .feature-card-text p {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .features {
+        padding: 20px 10px;
+        gap: 15px;
+    }
+    
+    .feature-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .feature-text {
+        width: 100%;
+        font-size: 18px;
+    }
+    
+    .feature-image {
+        width: 100%;
+    }
+    
+    .feature-card-text {
+        font-size: 16px;
+        padding: 12px;
+        border-top: none;
+        border-left: 4px solid rgb(107, 104, 104);
+    }
+    
+    .feature-card-text h3 {
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+    
+    .feature-card-text p {
+        font-size: 13px;
+    }
+}
+}

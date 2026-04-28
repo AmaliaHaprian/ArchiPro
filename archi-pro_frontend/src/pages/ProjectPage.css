@@ -1,0 +1,228 @@
+.project-page {
+    display: flex;
+    flex-direction: row;
+    min-height: 100vh;
+    background: #c7d7ea;
+    box-sizing: border-box;
+    animation: fadeIn 0.4s ease;
+}
+
+.back-to-projects {
+  font-size: 28px;
+}
+
+.project-main {
+  flex: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  animation: slideInFromRight 0.5s ease;
+}
+
+.project-main-grid {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 30px;
+}
+
+.description-area h2 {
+  font-size: 42px;
+  margin: 0 0 10px;
+  animation: slideInFromLeft 0.5s ease;
+}
+
+.description-area p {
+  font-size: 34px;
+  line-height: 1.35;
+  margin: 0;
+  word-wrap: break-word;
+  animation: slideInFromLeft 0.5s ease 0.1s both;
+}
+
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.to-do-panel, .notes-panel {
+  background: rgba(211, 211, 211, 0.70);
+  height: 200px;
+  border: 1px solid rgb(172, 166, 166);
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 18px;
+  overflow-y: auto;
+  animation: slideInFromRight 0.5s ease 0.15s both;
+  transition: all 0.3s;
+}
+
+.to-do-panel:hover, .notes-panel:hover {
+  border-color: #0066cc;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
+  transform: translateY(-2px);
+}
+
+.import-button {
+  align-self: center;
+  background-color: black;
+  color: white;
+  transition: all 0.3s;
+  animation: slideInFromBottom 0.5s ease 0.2s both;
+}
+
+.import-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.project-footer {
+  margin-top: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .back-to-projects {
+    font-size: 24px;
+  }
+
+  .description-area h2 {
+    font-size: 36px;
+  }
+
+  .description-area p {
+    font-size: 28px;
+  }
+
+  .to-do-panel, .notes-panel {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .back-to-projects {
+    font-size: 20px;
+  }
+
+  .project-main {
+    padding: 15px;
+  }
+
+  .project-main-grid {
+    gap: 20px;
+  }
+
+  .description-area h2 {
+    font-size: 30px;
+  }
+
+  .description-area p {
+    font-size: 22px;
+  }
+
+  .to-do-panel, .notes-panel {
+    height: 180px;
+    font-size: 14px;
+  }
+
+  .import-button {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .project-page {
+    flex-direction: column;
+  }
+
+  .project-main {
+    padding: 12px;
+  }
+
+  .project-main-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .back-to-projects {
+    font-size: 16px;
+  }
+
+  .description-area h2 {
+    font-size: 24px;
+  }
+
+  .description-area p {
+    font-size: 16px;
+  }
+
+  .to-do-panel, .notes-panel {
+    height: 150px;
+    font-size: 13px;
+    padding: 8px;
+  }
+
+  .import-button {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+
+  .project-footer {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .project-page {
+    flex-direction: column;
+    padding: 0;
+  }
+
+  .project-main {
+    padding: 8px;
+    min-height: auto;
+  }
+
+  .project-main-grid {
+    gap: 10px;
+  }
+
+  .back-to-projects {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .description-area h2 {
+    font-size: 16px;
+    margin: 0 0 6px;
+  }
+
+  .description-area p {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .to-do-panel, .notes-panel {
+    height: 100px;
+    font-size: 11px;
+    padding: 6px;
+    border-radius: 6px;
+  }
+
+  .import-button {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  .project-footer {
+    font-size: 11px;
+  }
+
+  .project-footer p {
+    margin: 2px 0;
+  }
+}

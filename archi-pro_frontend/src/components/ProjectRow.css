@@ -1,0 +1,146 @@
+.project-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 48px;
+    align-items: center;
+    min-height: 48px;
+    height: 50%;
+    padding: 0 10px;
+    box-sizing: border-box;
+    border-bottom: 1px solid #8f8f8f;
+    font-size: 32px;
+}
+
+.infinite-project-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 48px;
+    align-items: center;
+    min-height: 48px;
+    padding: 0 10px;
+    box-sizing: border-box;
+    border-bottom: 1px solid #8f8f8f;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.project-row:last-child {
+    border-bottom: 0;
+}
+
+.project-cell {
+    font-size: 36px;
+    line-height: 1.1;
+    margin: 10px;
+}
+/* .light .project-row .project-cell {
+    color: #222;
+    font-size: 32px;
+    line-height: 1.1;
+}
+
+.dark .project-row .project-cell {
+    color: #f0f0f0;
+    font-size: 32px;
+    line-height: 1.1;
+} */
+
+.folder-action {
+    width: 40px;
+    height: 36px;
+    border: 0;
+    border-radius: 2px;
+    background: #73b8e0;
+    cursor: pointer;
+    position: relative;
+}
+
+.folder-action::before {
+    content: '';
+    position: absolute;
+    left: 1px;
+    top: -4px;
+    width: 11px;
+    height: 5px;
+    border-radius: 2px 2px 0 0;
+    background: #73b8e0;
+}
+
+@media (max-width: 900px) {
+    .project-row {
+        grid-template-columns: 2fr 1fr 1fr 1fr 36px;
+        min-height: 40px;
+    }
+
+    .infinite-project-header {
+        grid-template-columns: 2fr 1fr 1fr 1fr 36px;
+        min-height: 40px;
+    }
+
+    .project-cell {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 768px) {
+    .project-row {
+        grid-template-columns: 1.2fr 0.8fr 0.8fr 0.8fr 30px;
+        min-height: 36px;
+        padding: 0 6px;
+    }
+
+    .infinite-project-header {
+        grid-template-columns: 1.2fr 0.8fr 0.8fr 0.8fr 30px;
+        min-height: 36px;
+        padding: 0 6px;
+    }
+
+    .project-cell {
+        font-size: 14px;
+        line-height: 1;
+    }
+
+    .folder-action {
+        width: 24px;
+        height: 20px;
+    }
+
+    .folder-action::before {
+        width: 8px;
+        height: 4px;
+        left: 1px;
+        top: -3px;
+    }
+}
+
+@media (max-width: 480px) {
+    .project-row {
+        grid-template-columns: 1fr 0.7fr 0.7fr 0.7fr 28px;
+        min-height: 32px;
+        padding: 0 4px;
+        font-size: 12px;
+    }
+
+    .infinite-project-header {
+        grid-template-columns: 1fr 0.7fr 0.7fr 0.7fr 28px;
+        min-height: 32px;
+        padding: 0 4px;
+        font-size: 12px;
+    }
+
+    .project-cell {
+        font-size: 11px;
+        line-height: 1;
+        word-break: break-word;
+    }
+
+    .folder-action {
+        width: 20px;
+        height: 16px;
+    }
+
+    .folder-action::before {
+        width: 6px;
+        height: 3px;
+        left: 1px;
+        top: -2px;
+    }
+}
