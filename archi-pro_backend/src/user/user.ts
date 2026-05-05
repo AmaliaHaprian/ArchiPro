@@ -1,7 +1,10 @@
-import { IsString, MinLength } from 'class-validator';
+import { IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 import { randomUUID } from 'crypto';
 import { Project } from 'src/project/Project';
-import { Entity, Column, OneToMany, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, OneToMany, ManyToOne, JoinColumn, PrimaryGeneratedColumn } from 'typeorm';
+import type { Role } from './access-control';
+import { RoleName } from './access-control';
+
 @Entity()
 export class User {
     @PrimaryGeneratedColumn('uuid')
@@ -12,13 +15,17 @@ export class User {
     email: string;
     @Column()
     password: string;
+    @ManyToOne('Role', 'users', { nullable: false })
+    @JoinColumn({ name: 'roleId', referencedColumnName: 'id' })
+    role!: Role;
     @OneToMany(() => Project, project => project.user)
     projects!: Project[];
-    constructor(username: string, email: string, password: string, id?: string) {
+    constructor(username: string, email: string, password: string, id?: string, role?: Role) {
         this.id = id ?? randomUUID();
         this.username = username;
         this.email = email;
         this.password = password;
+        this.role = role as Role;
     }
 }
 
@@ -31,9 +38,14 @@ export class CreateUserDto {
     @MinLength(6, { message: 'Password must be at least 6 characters long' })
     password: string;
 
-    constructor(username: string, email: string, password: string) {
+    @IsOptional()
+    @IsEnum(RoleName)
+    roleName?: RoleName;
+
+    constructor(username: string, email: string, password: string, roleName?: RoleName) {
         this.username = username;
         this.email = email;
         this.password = password;
+        this.roleName = roleName;
     }
 }

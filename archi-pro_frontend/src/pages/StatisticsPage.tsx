@@ -13,8 +13,8 @@ function StatisticsPage({ chartsRefreshKey }: { chartsRefreshKey: number }) {
         const userStr = localStorage.getItem('user');
         if (userStr) {
             const user = JSON.parse(userStr);
-            setUserId(user.userId);
-            console.log('User ID set in StatisticsPage:', user.userId);
+            setUserId(user.userId ?? user.id);
+            console.log('User ID set in StatisticsPage:', user.userId ?? user.id);
         }
     }, []);
     return (

@@ -1,0 +1,32 @@
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+
+# Test coverage
+coverage/
+*.lcov
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+
+# TypeScript
+*.tsbuildinfo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local config
+*.local
+
+# IDE files
+.vscode/
+.idea/

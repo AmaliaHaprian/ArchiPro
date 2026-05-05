@@ -229,6 +229,17 @@ export async function getUserById(userId: string) : Promise<User> {
     return await response.json();
 }
 
+export async function fetchChatMessages() {
+    const response = await fetch(`${API_BASE_URL}/chat/messages`, {
+        method: 'GET',
+        headers: {}
+    });
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+    return await response.json();
+}
+
 export async function getProjectsByUserId(userId: string) : Promise<Project[]> {
     const response = await fetch(`${API_BASE_URL}/user/${userId}/projects`, {
         method: 'GET',

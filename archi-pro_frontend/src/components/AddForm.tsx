@@ -69,7 +69,8 @@ function AddForm({ onAddProject }: { onAddProject: (project: any) => void }) {
         }
 
         const userStr = localStorage.getItem('user');
-        const userId = userStr ? JSON.parse(userStr).userId : '';
+        const parsedUser = userStr ? JSON.parse(userStr) : null;
+        const userId = parsedUser ? (parsedUser.userId ?? parsedUser.id) : '';
 
         const project ={
             userId: userId,

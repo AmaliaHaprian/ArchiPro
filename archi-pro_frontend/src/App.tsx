@@ -14,6 +14,7 @@ import SiteAnalysisPage from './pages/ProjectVisualizationPage.tsx'
 import ResearchPage from './pages/ResearchPage.tsx'
 import DesignPage from './pages/DesignPage.tsx'
 import ShadowPath from './pages/ShadowPath.tsx'
+import ChatPage from './pages/ChatPage.tsx'
 import { syncQueuedActions } from './api.ts'
 import { useNetworkStatus } from './hooks/useNetworkStatus.ts'
 import { clearQueuedActions, getQueuedActions } from './hooks/useNetworkStatus.ts'
@@ -97,6 +98,7 @@ function App() {
       <Route path="/register" element={<RegisterPage onRegisterUser={registerUser} />} />
       <Route path="/login" element={<LoginPage onLoginUser={loginUser} />} />
       <Route path="/project/:projectId/shadow-path" element={<ShadowPath projects={projects} />} />
+      <Route path="/chat" element={<ChatPage />} />
     </Routes>
   )
 }

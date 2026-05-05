@@ -46,12 +46,16 @@ function LoginForm({ onLoginUser }: { onLoginUser: (username: string, password: 
                     setErrors(prev => ({ ...prev, email: 'Invalid email or password.' }));
                     return;
                 }
-                // Store user in localStorage
-                localStorage.setItem('user', JSON.stringify({
+                const storedUser = {
+                    id: user.id,
                     userId: user.id,
                     username: user.username,
-                    email: user.email
-                }));
+                    email: user.email,
+                    role: user.role?.name ?? 'USER',
+                    permissions: user.role?.permissions?.map(permission => permission.code) ?? [],
+                };
+                // Store user in localStorage
+                localStorage.setItem('user', JSON.stringify(storedUser));
                 onLoginUser(email, password);
                 navigate('/overview'); // Redirect to overview after successful login
             } catch (error) {

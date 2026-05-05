@@ -23,7 +23,7 @@ function InfiniteProjects({ chartsRefreshKey }: { chartsRefreshKey: number }) {
     const userStr = localStorage.getItem('user');
     if (userStr) {
       const user = JSON.parse(userStr);
-      setUserId(user.userId);
+      setUserId(user.userId ?? user.id);
     }
   }, []);
 
