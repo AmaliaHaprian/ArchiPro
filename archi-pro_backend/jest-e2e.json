@@ -1,0 +1,19 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "src",
+  "testEnvironment": "node",
+  "testRegex": "(e2e-spec|integration\\.spec)\\.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "testTimeout": 60000,
+  "collectCoverageFrom": [
+    "**/*.ts",
+    "!**/*.spec.ts",
+    "!**/*.test.ts",
+    "!main.ts",
+    "!migrations/**"
+  ],
+  "coverageDirectory": "../coverage",
+  "coverageReporters": ["text", "lcov", "clover", "json"]
+}
