@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Project } from 'src/project/Project';
 import { ProjectRepository } from 'src/project/projectRepo';
-
+import { Repository } from 'typeorm';
+    
 @Injectable()
 export class StatisticsService {
-    constructor(private readonly projectRepository: ProjectRepository) {}
+    constructor(
+        @InjectRepository(Project)
+        private projectRepository: Repository<Project>
+    ) {}
 
-    getProjectsByCategory() {
-        const projects = this.projectRepository.getAll();
+    async getProjectsByCategory() {
+        const projects = await this.projectRepository.find();
         const categories = projects.reduce((acc, project) => {
             const category = project.category;
             acc[category] = (acc[category] || 0) + 1;
@@ -15,8 +21,8 @@ export class StatisticsService {
         return categories;
     }
 
-    getStageBottleneck() {
-        const projects = this.projectRepository.getAll();
+    async getStageBottleneck() {
+        const projects = await this.projectRepository.find();
         const stages = projects.reduce((acc, project) => {
             const stage = project.currentStage;
             acc[stage] = (acc[stage] || 0) + 1;
@@ -25,8 +31,8 @@ export class StatisticsService {
         return stages;
     }
 
-    getStatusDistribution() {
-        const projects = this.projectRepository.getAll();
+    async getStatusDistribution() {
+        const projects = await this.projectRepository.find();
         const statusDistribution = projects.reduce((acc, project) => {
             const status = project.status;
             acc[status] = (acc[status] || 0) + 1;
@@ -35,16 +41,16 @@ export class StatisticsService {
         return statusDistribution;
     }
 
-    getTopCompletedProjects() {
-        const projects = this.projectRepository.getAll();
+    async getTopCompletedProjects() {
+        const projects = await this.projectRepository.find();
         const completedProjects = projects.filter(project => project.status === 'DONE');
         const topProjects = completedProjects.sort((a, b) => b.workingHours - a.workingHours).slice(0, 5);
 
         return topProjects.slice(0, 3);
     }
 
-    getOverallStatistics() {
-        const projects = this.projectRepository.getAll();
+    async getOverallStatistics() {
+        const projects = await this.projectRepository.find();
         console.log(projects.length);
         const totalProjects = projects.length;
         const completedProjects = projects.filter(project => project.status === 'DONE').length;
@@ -56,10 +62,11 @@ export class StatisticsService {
             averageWorkingHours,
             averageProgress
         };
+
     }
 
-    getProjectsByCategoryForUser(userId: string) {
-        const projects = this.projectRepository.getProjectsByUserId(userId);
+    async getProjectsByCategoryForUser(userId: string) {
+        const projects = await this.projectRepository.find({ where: { user: { id: userId } } });
         const categories = projects.reduce((acc, project) => {
             const category = project.category;
             acc[category] = (acc[category] || 0) + 1;
@@ -68,8 +75,8 @@ export class StatisticsService {
         return categories;
     }
 
-    getStageBottleneckForUser(userId: string) {
-        const projects = this.projectRepository.getProjectsByUserId(userId);
+    async getStageBottleneckForUser(userId: string) {
+        const projects = await this.projectRepository.find({ where: { user: { id: userId } } });
         const stages = projects.reduce((acc, project) => {
             const stage = project.currentStage;
             acc[stage] = (acc[stage] || 0) + 1;
@@ -78,8 +85,10 @@ export class StatisticsService {
         return stages;
     }
 
-    getStatusDistributionForUser(userId: string) {
-        const projects = this.projectRepository.getProjectsByUserId(userId);
+    async getStatusDistributionForUser(userId: string) {
+
+        
+        const projects = await this.projectRepository.find({ where: { user: { id: userId } } });
         const statusDistribution = projects.reduce((acc, project) => {
             const status = project.status;
             acc[status] = (acc[status] || 0) + 1;
@@ -88,24 +97,34 @@ export class StatisticsService {
         return statusDistribution;
     }
 
-    getTopCompletedProjectsForUser(userId: string) {
-        const projects = this.projectRepository.getProjectsByUserId(userId);
+    async getTopCompletedProjectsForUser(userId: string) {
+        const projects = await this.projectRepository.find({ where: { user: { id: userId } } });
         const completedProjects = projects.filter(project => project.status === 'DONE');
         const topProjects = completedProjects.sort((a, b) => b.workingHours - a.workingHours).slice(0, 5);
         return topProjects.slice(0, 3);
     }
 
-    getOverallStatisticsForUser(userId: string) {
-        const projects = this.projectRepository.getProjectsByUserId(userId);
-        const totalProjects = projects.length;
-        const deadlines = projects.filter(project => project.status === 'DONE').length;
-        const averageWorkingHours = totalProjects > 0 ? projects.reduce((acc, project) => acc + project.workingHours, 0) / totalProjects : 0;
-        const averageProgress = totalProjects > 0 ? projects.reduce((acc, project) =>  acc + project.progress, 0) / totalProjects : 0;
+    async getOverallStatisticsForUser(userId: string) {
+        const result = await this.projectRepository.query(`
+            SELECT * FROM get_overall_statistics_for_user($1)
+        `, [userId]);
+
+        if (result && result.length > 0) {
+            const row = result[0];
+            console.log('Raw statistics result from database for user:', userId, row);
+            return {
+                totalProjects: Number(row.totalprojects),
+                deadlines: Number(row.deadlines),
+                averageWorkingHours: Number(row.averageworkinghours),
+                averageProgress: Number(row.averageprogress)
+            };
+        }
         return {
-            totalProjects,
-            deadlines,
-            averageWorkingHours,
-            averageProgress
+            totalProjects: 0,
+            deadlines: 0,
+            averageWorkingHours: 0,
+            averageProgress: 0
         };
+
     }
 }

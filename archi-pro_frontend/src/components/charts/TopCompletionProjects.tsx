@@ -2,13 +2,13 @@ import type { Project } from '../../models/Project';
 import { useEffect, useState } from 'react';
 import { getTopCompleted, getTopCompletedByUserId } from '../../api';
 
-async function getTopCompletedProjects(userId ?: string) : Promise<Project[]> {
+async function getTopCompletedProjects(userId: string) : Promise<Project[]> {
   const topCompleted = userId ? await getTopCompletedByUserId(userId) : await getTopCompleted();
   return topCompleted;
 }
 
 
-function TopCompletionProjects (props : { refreshKey: number, userId?: string | null }) {
+function TopCompletionProjects (props : { refreshKey: number, userId: string }) {
   const [topProjects, setTopProjects] = useState<Project[]>([]);
 
   useEffect(() => {

@@ -296,7 +296,6 @@ export async function getTopCompletedByUserId(userId: string) : Promise<Project[
 }
 
 export async function getOverallStatisticsByUserId(userId: string) {
-    console.log("Top row statistics called");
     const response = await fetch(`${API_BASE_URL}/statistics/overall-statistics/${userId}`, {
         method: 'GET',
         headers: {}

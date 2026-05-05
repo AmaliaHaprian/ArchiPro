@@ -12,6 +12,7 @@ describe('ProjectDto', () => {
     const now = new Date();
     const dto = new ProjectDto(
       '1',
+      'user-123',
       'Test Project',
       ProjectStatus.IN_PROGRESS,
       ProjectCategory.RESIDENTIAL,
@@ -26,6 +27,7 @@ describe('ProjectDto', () => {
       stageData
     );
     expect(dto.id).toBe('1');
+    expect(dto.userId).toBe('user-123');
     expect(dto.title).toBe('Test Project');
     expect(dto.status).toBe(ProjectStatus.IN_PROGRESS);
     expect(dto.category).toBe(ProjectCategory.RESIDENTIAL);

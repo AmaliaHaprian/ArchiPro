@@ -48,7 +48,7 @@ function LoginForm({ onLoginUser }: { onLoginUser: (username: string, password: 
                 }
                 // Store user in localStorage
                 localStorage.setItem('user', JSON.stringify({
-                    userId: user.userId,
+                    userId: user.id,
                     username: user.username,
                     email: user.email
                 }));

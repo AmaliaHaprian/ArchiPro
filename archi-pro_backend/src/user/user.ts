@@ -1,13 +1,21 @@
 import { IsString, MinLength } from 'class-validator';
 import { randomUUID } from 'crypto';
+import { Project } from 'src/project/Project';
+import { Entity, Column, OneToMany, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+@Entity()
 export class User {
-    userId: string;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
+    @Column()
     username: string;
+    @Column()
     email: string;
+    @Column()
     password: string;
-
-    constructor(username: string, email: string, password: string) {
-        this.userId = randomUUID();
+    @OneToMany(() => Project, project => project.user)
+    projects!: Project[];
+    constructor(username: string, email: string, password: string, id?: string) {
+        this.id = id ?? randomUUID();
         this.username = username;
         this.email = email;
         this.password = password;

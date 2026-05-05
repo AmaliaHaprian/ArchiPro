@@ -3,7 +3,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { useEffect, useState } from 'react';
 import { getStatusDistribution, getStatusDistributionByUserId } from '../../api';
 
-async function computeStatusDistribution(userId : string | null) {
+async function computeStatusDistribution(userId : string) {
   const statusMap : Record<string, number> = userId ? await getStatusDistributionByUserId(userId) : await getStatusDistribution();
   
   return Object.entries(statusMap).map(([name, value]) => {
@@ -15,7 +15,7 @@ async function computeStatusDistribution(userId : string | null) {
   });
 };
 
-const StatusDistributionPie = (props : {refreshKey?: number, userId?: string | null }) => {
+const StatusDistributionPie = (props : {refreshKey?: number, userId: string }) => {
   const [statusData, setStatusData] = useState<Array<{ name: string; value: number; color: string }>>([]);
 
   useEffect(() => {
@@ -39,6 +39,7 @@ const StatusDistributionPie = (props : {refreshKey?: number, userId?: string | n
             fill="#8884d8"
             paddingAngle={0}
             dataKey="value"
+            label={(entry) => `${entry.name}: ${entry.value} (${total > 0 ? ((entry.value * 100) / total).toFixed(2) : 0}%)`}
           >
             {statusData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />

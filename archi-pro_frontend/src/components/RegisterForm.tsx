@@ -61,7 +61,7 @@ function RegisterForm({onRegisterUser}: { onRegisterUser: (user: User) => void }
             }
             console.log('Registered with:', registeredUser);
             localStorage.setItem('user', JSON.stringify({
-                userId: registeredUser.userId,
+                id: registeredUser.id,
                 username: registeredUser.username,
                 email: registeredUser.email
             }));

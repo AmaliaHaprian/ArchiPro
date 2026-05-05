@@ -1,4 +1,6 @@
 import { randomUUID } from 'crypto';
+import { User } from 'src/user/user';
+import { Entity, Column, OneToMany, ManyToOne, JoinColumn, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum ProjectStatus {
     NOT_STARTED = "NOT_STARTED",
@@ -127,24 +129,42 @@ export class StageData {
         this.design = new DesignStage(projectId);
     }
 }
+
+@Entity()
 export class Project {
+    
+    @PrimaryGeneratedColumn('uuid')
     id: string;
-    userId: string;
+    @ManyToOne(() => User, user => user.projects)
+    @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+    user: User;
+    @Column()
     title: string;
+    @Column({ type: 'enum', enum: ProjectStatus })
     status: ProjectStatus;
+    @Column({ type: 'enum', enum: ProjectCategory })
     category: ProjectCategory;
+    @Column()
     progress: number;
+    @Column()
     description: string;
+    @Column('date')
     startDate: Date;
+    @Column('date')
     endDate: Date;
+    @Column('date')
     createdAt!: Date;
+    @Column('date')
     updatedAt!: Date;
+    @Column({ type: 'enum', enum: ProjectStage })
     currentStage!: ProjectStage;
+    @Column('int')
     workingHours!: number;
+    @Column('jsonb')
     stageData: StageData;
-    constructor(userId: string, title: string,  category: ProjectCategory, description: string, startDate: Date, endDate: Date) {
+    constructor(user: User, title: string,  category: ProjectCategory, description: string, startDate: Date, endDate: Date) {
         this.id = randomUUID();
-        this.userId = userId;
+        this.user = user;
         this.title = title;
         this.status = ProjectStatus.PLANNING;
         this.category = category;

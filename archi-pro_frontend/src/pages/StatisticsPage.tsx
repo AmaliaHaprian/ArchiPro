@@ -7,13 +7,14 @@ import './StatisticsPage.css';
 import { useEffect, useState } from "react";
 
 function StatisticsPage({ chartsRefreshKey }: { chartsRefreshKey: number }) {
-    const [userId, setUserId] = useState<string | null>(null);
+    const [userId, setUserId] = useState<string>('');
 
     useEffect(() => {
         const userStr = localStorage.getItem('user');
         if (userStr) {
             const user = JSON.parse(userStr);
             setUserId(user.userId);
+            console.log('User ID set in StatisticsPage:', user.userId);
         }
     }, []);
     return (

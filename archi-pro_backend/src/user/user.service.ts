@@ -1,30 +1,36 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from './userRepository';
 import { User, CreateUserDto } from './user';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 @Injectable()
 export class UserService {
-    constructor(private userRepository: UserRepository) {}
+    constructor(
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>
+    ) {}
 
     async registerUser(userData: CreateUserDto) {
         const user = new User(userData.username, userData.email, userData.password);
-        const createdUser = await this.userRepository.saveUser(user);
+        const createdUser = await this.userRepository.save(user);
         return createdUser;
     }
 
     async getUserById(userId: string) {
-        return this.userRepository.findUserById(userId);
+        return await this.userRepository.findOne({ where: { id: userId } });
     }
 
     async getUserByEmail(email: string) {
-        return this.userRepository.findUserByEmail(email);
+        return await this.userRepository.findOne({ where: { email } });
     }
 
     async deleteUser(userId: string) {
-        return this.userRepository.deleteUser(userId);
+        return await this.userRepository.delete({ id: userId });
     }
 
     async loginUser(email: string, password: string) {
-        console.log(`Attempting login for email: ${email}`);
-        return this.userRepository.loginUser(email, password);
+        const user = await this.userRepository.findOne({ where: { email, password } });
+        console.log(user);
+        return user;
     }
 }

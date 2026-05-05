@@ -2,7 +2,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { getProjectsByCategory, getProjectsByCategoryByUserId } from '../../api';
 import { useEffect, useState } from 'react';
 
-async function categoryData(userId: string | null) {
+async function categoryData(userId: string ) {
   const categories : Record<string, number> = userId ? await getProjectsByCategoryByUserId(userId) : await getProjectsByCategory();
 
   return Object.keys(categories).map(cat => ({
@@ -11,7 +11,7 @@ async function categoryData(userId: string | null) {
   }));
 }
 
-const ProjectsByTypeBar = (props : {refreshKey?: number, userId?: string | null }) => {
+const ProjectsByTypeBar = (props : {refreshKey?: number, userId: string }) => {
     const [data, setData] = useState<Array<{ type: string; total: number; color: string }>>([]);
 
     useEffect(() => {

@@ -1,0 +1,17 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": "(e2e-spec|integration\\.spec)\\.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "testTimeout": 30000,
+  "collectCoverageFrom": [
+    "../src/**/*.ts",
+    "!../src/**/*.spec.ts",
+    "!../src/**/*.test.ts",
+    "!../src/main.ts",
+    "!../src/migrations/**"
+  ]
+}

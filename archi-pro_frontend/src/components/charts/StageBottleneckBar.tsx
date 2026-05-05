@@ -2,17 +2,17 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { getStageBottleneck, getStageBottleneckByUserId } from '../../api';
 import { useEffect, useState } from 'react';
 
-async function bottleneckData(userId: string | null) {
+async function bottleneckData(userId: string) {
   const stages : Record<string, number> = userId ? await getStageBottleneckByUserId(userId) : await getStageBottleneck();
 
   return Object.keys(stages).map(stage => ({
-    name: stage,
+    name: stage,  
     count: stages[stage]
   }));
 };
 
 
-const StageBottleneckBar = (props : {refreshKey?: number, userId?: string | null }) => {
+const StageBottleneckBar = (props : {refreshKey?: number, userId: string }) => {
     const [data, setData] = useState<Array<{ name: string; count: number; color: string }>>([]);
 
     useEffect(() => {

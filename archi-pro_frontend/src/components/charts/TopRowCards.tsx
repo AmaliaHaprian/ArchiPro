@@ -2,17 +2,18 @@ import './TopRowCards.css';
 import { getOverallStatistics, getOverallStatisticsByUserId } from '../../api';
 import { useState, useEffect } from 'react';
 
-async function statistics(userId? : string) {
+async function statistics(userId : string) {
     const stats = await getOverallStatisticsByUserId(userId);
     const total = stats.totalProjects;
     const avgProgress = stats.averageProgress;
     const avgHours = stats.averageWorkingHours;
     const deadlines = stats.deadlines;
+    console.log('Statistics fetched for user:', userId, { total, avgProgress, avgHours, deadlines });
 
   return { total, avgProgress, avgHours, deadlines };
 }
 
-function TopRowCards(props: { refreshKey: number, userId?: string | null }) {
+function TopRowCards(props: { refreshKey: number, userId: string  }) {
     console.log("Top row cards refresh key:", props.refreshKey);
     const [stats, setStats] = useState({ total: 0, avgProgress: 0, avgHours: 0, deadlines: 0 });
 

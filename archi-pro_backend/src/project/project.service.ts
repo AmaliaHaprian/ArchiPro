@@ -5,132 +5,130 @@ import { ProjectFilter } from './Project';
 import type { Action } from './Project';
 import { ProjectWebSocketGateway } from './websocketGateway';
 import { generateBatchOfFakeProjects } from './generateFakeData';
+import { User } from '../user/user';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, ILike } from 'typeorm';
 
 @Injectable()
 export class ProjectService {
     private fakeProjectInterval: NodeJS.Timeout | null = null;
+    
 
-    constructor(private readonly projectRepository: ProjectRepository,
+    constructor(
+        @InjectRepository(Project)
+        private readonly projectRepository: Repository<Project>,
         private readonly projectWebSocketGateway: ProjectWebSocketGateway
     ) {}
 
-    getAllProjects() {
-        return this.projectRepository.getAll();
+    //
+    async getAllProjects() {
+        return await this.projectRepository.find({ relations: { user: true } });
+    }
+    //
+    async saveProject(project: Project) {
+        return await this.projectRepository.save(project);
+    }
+    //
+    async deleteProject(id: string) {
+        return await this.projectRepository.delete(id);
+    }
+    //
+    async updateProject(id: string, updatedProject: Project) {
+        return await this.projectRepository.save(updatedProject);
     }
 
-    saveProject(project: Project) {
-        return this.projectRepository.save(project);
+    async findProjectById(id: string) {
+        return await this.projectRepository.findOne({ where: { id }, relations: { user: true } });
     }
 
-    deleteProject(id: string) {
-        this.projectRepository.delete(id);
-    }
-
-    updateProject(id: string, updatedProject: Project) {
-        this.projectRepository.update(id, updatedProject);
-    }
-
-    findProjectById(id: string) {
-        return this.projectRepository.findById(id);
-    }
-
-    getPaginated(page: number) {
-        return this.projectRepository.getPaginated(page);
-    }
-
-    getProjectsByUserId(userId: string) {
-        return this.projectRepository.getProjectsByUserId(userId);
-    }
-
-    getPaginatedByUserId(userId: string, page: number) {
-        return this.projectRepository.getPaginatedByUserId(userId, page);
-    }
-
-    searchByTitle(title: string) {
-        const allProjects = this.projectRepository.getAll();
-        return allProjects.filter(project => project.title.toLowerCase().includes(title.toLowerCase()));
-    }
-
-    searchByTitleAndUserId(userId: string, title: string) {
-        const userProjects = this.projectRepository.getProjectsByUserId(userId);
-        return userProjects.filter(project => project.title.toLowerCase().includes(title.toLowerCase()));
-    }
-
-    filterandSearchProjects(title: string, filter: ProjectFilter) {
-        
-        const projects = this.searchByTitle(title);
-        if( filter.category?.toString() == ''  && filter.status?.toString() == '') {
-            return projects;
-        }
-
-        return projects.filter(project => {
-            if (filter.category && project.category !== filter.category) {
-                return false;
-            }
-            if (filter.status && project.status !== filter.status) {
-                return false;
-            }
-            return true;
-        });
-    }
-
-    getPaginatedFiltered(page: number, title: string, filter: ProjectFilter) {
-        const filteredProjects = this.filterandSearchProjects(title, filter);
-
+    async getPaginated(page: number) {
         const pageSize = 5;
-        const startIndex = (page - 1) * pageSize;
-        return filteredProjects.slice(startIndex, startIndex + pageSize);
+        const skip = (page - 1) * pageSize;
+        return await this.projectRepository.find({ skip, take: pageSize, relations: { user: true } });
     }
-
-    filterandSearchProjectsByUserId(userId: string, title: string, filter: ProjectFilter) {
-        const projects = this.searchByTitleAndUserId(userId, title);
-        console.log('Length of projects for user', userId, ':', projects.length);
-        if( filter.category?.toString() == ''  && filter.status?.toString() == '') {
-            return projects;
-        }
-
-        return projects.filter(project => {
-            if (filter.category && project.category !== filter.category) {
-                return false;
-            }
-            if (filter.status && project.status !== filter.status) {
-                return false;
-            }
-            return true;
-        });
+    //
+    async getProjectsByUserId(userId: string) {
+        return await this.projectRepository.find({ where: { user: { id: userId } }, relations: { user: true } });
     }
-
-    getPaginatedFilteredByUserId(userId: string, page: number, title: string, filter: ProjectFilter) {
-        const filteredProjects = this.filterandSearchProjectsByUserId(userId, title, filter);
+    //
+    async getPaginatedByUserId(userId: string, page: number) {
         const pageSize = 5;
-        const startIndex = (page - 1) * pageSize;
-        return filteredProjects.slice(startIndex, startIndex + pageSize);
+        const skip = (page - 1) * pageSize;
+        return await this.projectRepository.find({ where: { user: { id: userId } }, skip, take: pageSize, relations: { user: true } });
+    }
+    //
+    async searchByTitle(title: string) {
+        return await this.projectRepository.find({ where: { title: ILike(`%${title}%`) }, relations: { user: true } });
+    }
+    //
+    async searchByTitleAndUserId(userId: string, title: string) {
+        return await this.projectRepository.find({ where: { user: { id: userId }, title: ILike(`%${title}%`) }, relations: { user: true } });
+    }
+    //
+    async filterandSearchProjects(title: string, filter: ProjectFilter) {
+        return await this.projectRepository.find({ where: {
+            title: ILike(`%${title}%`),
+            ...(filter.category ? { category: filter.category } : {}),
+            ...(filter.status ? { status: filter.status } : {})
+        }, relations: { user: true } });
+    }
+    //
+    async getPaginatedFiltered(page: number, title: string, filter: ProjectFilter) {
+        const pageSize = 5;
+        const skip = (page - 1) * pageSize;
+        return await this.projectRepository.find({ where: {
+            title: ILike(`%${title}%`),
+            ...(filter.category ? { category: filter.category } : {}),
+            ...(filter.status ? { status: filter.status } : {})
+        }, skip, take: pageSize, relations: { user: true } });
+    }
+    //
+    async filterandSearchProjectsByUserId(userId: string, title: string, filter: ProjectFilter) {
+        return await this.projectRepository.find({ where: {
+            user: { id: userId },
+            title: ILike(`%${title}%`),
+            ...(filter.category ? { category: filter.category } : {}),
+            ...(filter.status ? { status: filter.status } : {})
+        }, relations: { user: true } });
+    }
+    //
+    async getPaginatedFilteredByUserId(userId: string, page: number, title: string, filter: ProjectFilter) {
+        const pageSize = 5;
+        const skip = (page - 1) * pageSize;
+        return await this.projectRepository.find({ where: {
+            user: { id: userId },
+            title: ILike(`%${title}%`),
+            ...(filter.category ? { category: filter.category } : {}),
+            ...(filter.status ? { status: filter.status } : {})
+        }, skip, take: pageSize, relations: { user: true } });
     }
     
-    syncOfflineData(actionQueue: Action[]) {
+    async syncOfflineData(actionQueue: Action[]) {
         for (const action of actionQueue) {
             switch (action.type) {
                 case 'add':
-                    this.saveProject(action.data.project);
+                    await this.saveProject(action.data.project);
                     break;
                 case 'update':
-                    this.updateProject(action.data.id, action.data.project);
+                    await this.updateProject(action.data.id, action.data.project);
                     break;
                 case 'delete':
-                    this.deleteProject(action.data.id);
+                    await this.deleteProject(action.data.id);
                     break;
             }
 
         }
     }
 
+    
     startFakeProjectGeneration(userId: string) {
         if (this.fakeProjectInterval) return;
 
         this.fakeProjectInterval = setInterval(() => {
             try {
-                const batch = generateBatchOfFakeProjects(userId);
-                batch.forEach(project => this.projectRepository.save(project));
+                const user = new User("", "", "", userId);
+                const batch = generateBatchOfFakeProjects(user);
+                Promise.all(batch.map(project => this.projectRepository.save(project)));
                 this.projectWebSocketGateway.broadcastProjectsAdded(batch);
             } catch (error) {
                 console.error('Fake project generation failed:', error);

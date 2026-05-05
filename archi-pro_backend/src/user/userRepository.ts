@@ -18,11 +18,11 @@ export class UserRepository {
     }
 
     findUserById(userId: string): User | undefined {
-        return this.users.find(user => user.userId === userId);
+        return this.users.find(user => user.id === userId);
     }
 
     deleteUser(userId: string): boolean {
-        const index = this.users.findIndex(user => user.userId === userId);
+        const index = this.users.findIndex(user => user.id === userId);
         if (index !== -1) {
             this.users.splice(index, 1);
             return true;

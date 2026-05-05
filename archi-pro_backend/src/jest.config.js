@@ -3,15 +3,21 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   moduleFileExtensions: ['ts', 'js', 'json'],
-  roots: ['<rootDir>/src'],
+  roots: ['<rootDir>'],
+  testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tsconfig.json',
-      useESM: true, // If you want ESM support
-    },
+  collectCoverageFrom: [
+    'src/**/*.ts',
+    '!src/**/*.spec.ts',
+    '!src/**/*.test.ts',
+    '!src/main.ts',
+    '!src/migrations/**',
+  ],
+  coverageDirectory: '../coverage',
+  coverageReporters: ['text', 'lcov', 'clover', 'json'],
+  moduleNameMapper: {
+    '^src/(.*)$': '<rootDir>/$1',
   },
-  extensionsToTreatAsEsm: ['.ts'],
 };
