@@ -24,7 +24,7 @@ function Overview() {
     const [theme, setTheme] = useState(() => getCookieValue('theme', 'light'));
     const [viewMode, setViewMode] = useState<'table' | 'charts'>('table');
     const [spamProjects, setSpamProjects] = useState<string>('Start');
-    const [currentUser, setCurrentUser] = useState<{ username: string; userId: string } | null>(null);
+    const [currentUser, setCurrentUser] = useState<{ username: string; userId: string; role: string; permissions: string[] } | null>(null);
     const [chartsRefreshKey, setChartsRefreshKey] = useState(0);
 
     useUserPreferences(
@@ -42,7 +42,12 @@ function Overview() {
         const userStr = localStorage.getItem('user');
         if (userStr) {
             const user = JSON.parse(userStr);
-            setCurrentUser({ username: user.username, userId: user.userId });
+            setCurrentUser({
+                username: user.username,
+                userId: user.userId ?? user.id,
+                role: user.role ?? user.roleName ?? 'USER',
+                permissions: user.permissions ?? [],
+            });
         }
     }, []);
 
@@ -72,6 +77,9 @@ function Overview() {
 
 
     const handleSpamProjects = () => {
+        if (currentUser?.role !== 'ADMIN') {
+            return;
+        }
         if (spamProjects === 'Start') {
             setSpamProjects('Stop');
             startFakeDataGeneration(currentUser?.userId || '');
@@ -81,11 +89,16 @@ function Overview() {
         }
     }
 
+    const handleOpenChat = () => {
+        navigate('/chat');
+    }
+
     return (
         <>
         <div className={theme==='light'? 'overview-light': 'overview-dark'}>
         <div className="overview">
             <ThemeSwitcher theme={theme} setTheme={setTheme} />
+            <button onClick={handleOpenChat}>Open Chat</button>
             <div className="projects-header">
                 <h2>ArchiPro</h2>
                 <div className="header-right">
@@ -94,7 +107,7 @@ function Overview() {
                             <div className="user-avatar">
                                 {currentUser.username.charAt(0).toUpperCase()}
                             </div>
-                            <span className="user-name">{currentUser.username}</span>
+                            <span className="user-name">{currentUser.username} · {currentUser.role}</span>
                             <button className="logout-button" onClick={handleLogout} type="button">
                                 Logout
                             </button>
@@ -113,12 +126,14 @@ function Overview() {
                         <p>Manage and track your architecture projects. All in one place</p>
                     </div>
                     <div className="header-buttons">
-                        <button className='spam-projects-button'
-                            onClick={handleSpamProjects}
-                            type="button"
-                        >
-                            {spamProjects}
-                        </button>
+                        {currentUser?.role === 'ADMIN' && (
+                            <button className='spam-projects-button'
+                                onClick={handleSpamProjects}
+                                type="button"
+                            >
+                                {spamProjects}
+                            </button>
+                        )}
                         <button 
                             className={`view-toggle-button ${viewMode === 'table' ? 'active' : ''}`}
                             onClick={() => setViewMode('table')}
