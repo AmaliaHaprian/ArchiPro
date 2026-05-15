@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StatisticsController } from './statistics.controller';
 import { StatisticsService } from './statistics.service';
+import { AccessControlService } from '../user/access-control.service';
 
 describe('StatisticsController', () => {
   let controller: StatisticsController;
@@ -18,6 +19,13 @@ describe('StatisticsController', () => {
             getStatusDistribution: jest.fn().mockReturnValue({}),
             getTopCompletedProjects: jest.fn().mockReturnValue([]),
             getOverallStatistics: jest.fn().mockReturnValue({}),
+          },
+        },
+        {
+          provide: AccessControlService,
+          useValue: {
+            requirePermission: jest.fn().mockResolvedValue({ id: 'test-user-id', role: { name: 'ADMIN' } }),
+            requireSelfOrAdmin: jest.fn().mockResolvedValue({ id: 'test-user-id', role: { name: 'ADMIN' } }),
           },
         },
       ],

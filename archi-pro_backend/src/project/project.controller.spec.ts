@@ -5,15 +5,19 @@ import { ProjectMapper } from './projectMapper';
 import { Project, ProjectCategory } from './Project';
 import { CreateProjectDto } from './dtos/createProjectDto';
 import { UpdateProjectDto } from './dtos/updateProjectDto';
+import { AccessControlService } from '../user/access-control.service';
+import { LoggingService } from '../logging/logging.service';
 
 describe('ProjectController', () => {
   let controller: ProjectController;
   let service: ProjectService;
+  const requesterUserId = 'test-user-id';
+  const mockUser = { id: requesterUserId } as any;
 
   beforeEach(async () => {
-    const mockProject1 = new Project("Housing Complex", ProjectCategory.RESIDENTIAL, "Building a new housing complex", new Date("2024-01-01"), new Date("2025-12-31"));
-    const mockProject2 = new Project("Office Building", ProjectCategory.URBAN, "Designing a modern office building", new Date("2024-02-01"), new Date("2025-11-30"));
-    const mockProject3 = new Project("Community Center", ProjectCategory.MIXED_USE, "Creating a community center", new Date("2024-03-01"), new Date("2025-10-31"));
+    const mockProject1 = new Project(mockUser, "Housing Complex", ProjectCategory.RESIDENTIAL, "Building a new housing complex", new Date("2024-01-01"), new Date("2025-12-31"));
+    const mockProject2 = new Project(mockUser, "Office Building", ProjectCategory.URBAN, "Designing a modern office building", new Date("2024-02-01"), new Date("2025-11-30"));
+    const mockProject3 = new Project(mockUser, "Community Center", ProjectCategory.MIXED_USE, "Creating a community center", new Date("2024-03-01"), new Date("2025-10-31"));
 
     const mockPaginatedResults = [
       { title: "Housing Complex", category: ProjectCategory.RESIDENTIAL, description: "Building a new housing complex", progress: 0, status: "PLANNING" },
@@ -24,6 +28,24 @@ describe('ProjectController', () => {
     const mockModule: TestingModule = await Test.createTestingModule({
       controllers: [ProjectController],
       providers: [
+        {
+          provide: AccessControlService,
+          useValue: {
+            requirePermission: jest.fn().mockResolvedValue({ id: requesterUserId, role: { name: 'ADMIN' } }),
+            requireSelfOrAdmin: jest.fn().mockResolvedValue({ id: requesterUserId, role: { name: 'ADMIN' } }),
+            requireProjectOwnerOrAdmin: jest.fn().mockResolvedValue({ id: requesterUserId, role: { name: 'ADMIN' } }),
+            requireAdmin: jest.fn().mockResolvedValue({ id: requesterUserId, role: { name: 'ADMIN' } }),
+          },
+        },
+        {
+          provide: LoggingService,
+          useValue: {
+            recordAction: jest.fn(),
+            getLogs: jest.fn(),
+            getObservations: jest.fn(),
+            resolveObservation: jest.fn(),
+          },
+        },
         {
           provide: ProjectService,
           useValue: {
@@ -158,10 +180,10 @@ describe('ProjectController', () => {
               stageData: project.stageData,
             })),
             toEntityFromCreateDto: jest.fn((dto: CreateProjectDto) => {
-              const project = new Project(dto.title, dto.category, dto.description, dto.startDate, dto.endDate);
+              const project = new Project(mockUser, dto.title, dto.category, dto.description, dto.startDate, dto.endDate);
               return project;
             }),
-            toEntityFromUpdateDto: jest.fn((dto) => new Project('', dto.category, dto.description, new Date(), dto.endDate)),
+            toEntityFromUpdateDto: jest.fn((dto) => new Project(mockUser, '', dto.category, dto.description, new Date(), dto.endDate)),
           },
         },
       ],
@@ -176,13 +198,14 @@ describe('ProjectController', () => {
   });
 
   it('should return paginated projects', async () => {
-    const result=await controller.getAllProjects(1);
+    const result=await controller.getAllProjects(requesterUserId, 1);
     expect(result).toHaveLength(3);
   });
 
   it('should add a new project', async () => {
-    const newProject = new CreateProjectDto("Outside Gym", ProjectCategory.MIXED_USE, "A new outdoor gym for the community.", new Date("2024-01-01"), new Date("2025-12-31"));
-    const result = await controller.createProject(newProject);
+    const newProject = new CreateProjectDto(requesterUserId, "Outside Gym", ProjectCategory.MIXED_USE, "A new outdoor gym for the community.", new Date("2024-01-01"), new Date("2025-12-31"));
+    jest.spyOn(service, 'saveProject').mockImplementation(async (project: Project) => project);
+    const result = await controller.createProject(requesterUserId, newProject);
     
     expect(result.title).toBe("Outside Gym");
     expect(result.category).toBe(ProjectCategory.MIXED_USE);
@@ -192,7 +215,7 @@ describe('ProjectController', () => {
   });
 
   it('should get filtered projects', async () => {
-    const result = await controller.filterProjects(1,'', ProjectCategory.RESIDENTIAL, 'PLANNING');
+    const result = await controller.filterProjects(requesterUserId, 1,'', ProjectCategory.RESIDENTIAL, 'PLANNING');
     expect(result[0].title).toBe("Housing Complex");
     expect(result[0].category).toBe(ProjectCategory.RESIDENTIAL);
     expect(result[0].description).toBe("Building a new housing complex");
@@ -201,7 +224,7 @@ describe('ProjectController', () => {
   })
 
   it('should get project by id', async () => {
-    const result = await controller.getProjectById("47b64d85-80c2-4cbb-844d-b19673535afa");
+    const result = await controller.getProjectById(requesterUserId, "47b64d85-80c2-4cbb-844d-b19673535afa");
     expect(result.title).toBe("Housing Complex");
     expect(result.category).toBe(ProjectCategory.RESIDENTIAL);
     expect(result.description).toBe("Building a new housing complex in the city center, consisting of 100 apartments and commercial spaces on the ground floor.");
@@ -210,19 +233,19 @@ describe('ProjectController', () => {
   });
 
   it('should throw NotFoundException for non-existing project', () => {
-    expect(() => controller.getProjectById("non-existing-id")).toThrow('Project with id non-existing-id not found');
+    return expect(controller.getProjectById(requesterUserId, "non-existing-id")).rejects.toThrow('Project with id non-existing-id not found');
   });
 
   it('should delete a project', async () => {
-    const result = await controller.deleteProject("47b64d85-80c2-4cbb-844d-b19673535afa");
+    const result = await controller.deleteProject(requesterUserId, "47b64d85-80c2-4cbb-844d-b19673535afa");
     expect(result.message).toBe('Project deleted successfully');
 
-    expect(() => controller.deleteProject("non-existing-id")).toThrow('Project with id non-existing-id not found');
+    await expect(controller.deleteProject(requesterUserId, "non-existing-id")).rejects.toThrow('Project with id non-existing-id not found');
   });
 
   it('should update a project', async () => {
     const updateDto = new UpdateProjectDto( ProjectCategory.URBAN, "Updated description", new Date("2025-12-31") );
-    await controller.updateProject("47b64d85-80c2-4cbb-844d-b19673535afa", updateDto);
+    await controller.updateProject(requesterUserId, "47b64d85-80c2-4cbb-844d-b19673535afa", updateDto);
     expect(service.updateProject).toHaveBeenCalledWith("47b64d85-80c2-4cbb-844d-b19673535afa", expect.objectContaining({
       category: ProjectCategory.URBAN,
       description: "Updated description",
@@ -232,27 +255,27 @@ describe('ProjectController', () => {
 
   it('should throw NotFoundException when updating non-existing project', async () => {
     const updateDto = { category: ProjectCategory.URBAN, description: "Updated description", endDate: new Date("2025-12-31") };
-    expect(() => controller.updateProject("non-existing-id", updateDto)).toThrow('Project with id non-existing-id not found');
+    await expect(controller.updateProject(requesterUserId, "non-existing-id", updateDto)).rejects.toThrow('Project with id non-existing-id not found');
   });
 
-  it('should call syncOfflineData on service and return success message', () => {
+  it('should call syncOfflineData on service and return success message', async () => {
     const mockActions = [{ type: 'add', data: { project: {} } }];
     const syncSpy = jest.spyOn(service, 'syncOfflineData').mockImplementation();
-    const result = controller.syncOfflineData(mockActions as any);
+    const result = await controller.syncOfflineData(requesterUserId, mockActions as any);
     expect(syncSpy).toHaveBeenCalledWith(mockActions);
     expect(result).toEqual({ message: 'Offline data synchronized successfully' });
   });
 
-  it('should call startFakeProjectGeneration on service and return success message', () => {
+  it('should call startFakeProjectGeneration on service and return success message', async () => {
     const startSpy = jest.spyOn(service, 'startFakeProjectGeneration').mockImplementation();
-    const result = controller.startFakeDataGeneration();
+    const result = await controller.startFakeDataGeneration(requesterUserId, requesterUserId);
     expect(startSpy).toHaveBeenCalled();
     expect(result).toEqual({ message: 'Fake data generation started successfully' });
   });
 
-  it('should call stopFakeProjectGeneration on service and return success message', () => {
+  it('should call stopFakeProjectGeneration on service and return success message', async () => {
     const stopSpy = jest.spyOn(service, 'stopFakeProjectGeneration').mockImplementation();
-    const result = controller.stopFakeDataGeneration();
+    const result = await controller.stopFakeDataGeneration(requesterUserId);
     expect(stopSpy).toHaveBeenCalled();
     expect(result).toEqual({ message: 'Fake data generation stopped successfully' });
   });

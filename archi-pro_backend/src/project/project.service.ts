@@ -8,6 +8,7 @@ import { generateBatchOfFakeProjects } from './generateFakeData';
 import { User } from '../user/user';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
+import { LoggingService } from '../logging/logging.service';
 
 @Injectable()
 export class ProjectService {
@@ -17,7 +18,8 @@ export class ProjectService {
     constructor(
         @InjectRepository(Project)
         private readonly projectRepository: Repository<Project>,
-        private readonly projectWebSocketGateway: ProjectWebSocketGateway
+        private readonly projectWebSocketGateway: ProjectWebSocketGateway,
+        private readonly loggingService: LoggingService,
     ) {}
 
     //
@@ -116,7 +118,6 @@ export class ProjectService {
                     await this.deleteProject(action.data.id);
                     break;
             }
-
         }
     }
 
@@ -130,6 +131,12 @@ export class ProjectService {
                 const batch = generateBatchOfFakeProjects(user);
                 Promise.all(batch.map(project => this.projectRepository.save(project)));
                 this.projectWebSocketGateway.broadcastProjectsAdded(batch);
+                void this.loggingService.recordAction({
+                    userId,
+                    group: 'ADMIN',
+                    action: 'FAKE_DATA_BATCH_CREATED',
+                    payload: { batchSize: batch.length },
+                });
             } catch (error) {
                 console.error('Fake project generation failed:', error);
             }

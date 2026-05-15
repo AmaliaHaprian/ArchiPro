@@ -7,14 +7,32 @@ import './StatisticsPage.css';
 import { useEffect, useState } from "react";
 
 function StatisticsPage({ chartsRefreshKey }: { chartsRefreshKey: number }) {
-    const [userId, setUserId] = useState<string>('');
+    const [userId, setUserId] = useState<string>(() => {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+            return '';
+        }
+
+        try {
+            const user = JSON.parse(userStr);
+            return user.userId ?? user.id ?? '';
+        } catch {
+            return '';
+        }
+    });
 
     useEffect(() => {
         const userStr = localStorage.getItem('user');
-        if (userStr) {
+        if (!userStr) {
+            return;
+        }
+
+        try {
             const user = JSON.parse(userStr);
-            setUserId(user.userId ?? user.id);
+            setUserId(user.userId ?? user.id ?? '');
             console.log('User ID set in StatisticsPage:', user.userId ?? user.id);
+        } catch {
+            setUserId('');
         }
     }, []);
     return (

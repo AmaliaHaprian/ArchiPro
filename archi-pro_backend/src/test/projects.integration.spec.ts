@@ -1,3 +1,6 @@
+import * as dotenv from 'dotenv';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProjectService } from 'src/project/project.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,6 +11,10 @@ import { DataSource } from 'typeorm';
 import { UserService } from 'src/user/user.service';
 import { StatisticsService } from 'src/statistics/statistics.service';
 import { Permission, Role } from 'src/user/access-control';
+import { LoggingService } from 'src/logging/logging.service';
+
+const testEnvPath = path.resolve(process.cwd(), '.env.test');
+const testEnv = dotenv.parse(fs.readFileSync(testEnvPath));
 
 describe('Projects Database integration', () => {
   let projectService: ProjectService;
@@ -21,17 +28,32 @@ describe('Projects Database integration', () => {
       imports: [
         TypeOrmModule.forRoot({
           type: 'postgres',
-          host: process.env.test.DB_HOST,
-          port: Number(process.env.test.DB_PORT),
-          username: process.env.test.DB_USER,
-          password: process.env.test.DB_PASS,
-          database: process.env.test.DB_NAME,
+          host: testEnv.DB_HOST,
+          port: Number(testEnv.DB_PORT),
+          username: testEnv.DB_USER,
+          password: testEnv.DB_PASS,
+          database: testEnv.DB_NAME,
           entities: [Project, User, Role, Permission],
+          dropSchema: true,
           synchronize: true,
         }),
         TypeOrmModule.forFeature([Project, User, Role, Permission]),
       ],
-      providers: [ProjectService, ProjectWebSocketGateway, UserService, StatisticsService],
+      providers: [
+        ProjectService,
+        ProjectWebSocketGateway,
+        UserService,
+        StatisticsService,
+        {
+          provide: LoggingService,
+          useValue: {
+            recordAction: async () => null,
+            getLogs: async () => [],
+            getObservations: async () => [],
+            resolveObservation: async () => null,
+          },
+        },
+      ],
     }).compile();
 
     projectService = module.get<ProjectService>(ProjectService);

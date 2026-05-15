@@ -93,6 +93,10 @@ function Overview() {
         navigate('/chat');
     }
 
+    const handleOpenObservations = () => {
+        navigate('/admin/observations');
+    }
+
     return (
         <>
         <div className={theme==='light'? 'overview-light': 'overview-dark'}>
@@ -127,12 +131,21 @@ function Overview() {
                     </div>
                     <div className="header-buttons">
                         {currentUser?.role === 'ADMIN' && (
-                            <button className='spam-projects-button'
-                                onClick={handleSpamProjects}
-                                type="button"
-                            >
-                                {spamProjects}
-                            </button>
+                            <>
+                                <button className='spam-projects-button'
+                                    onClick={handleSpamProjects}
+                                    type="button"
+                                >
+                                    {spamProjects}
+                                </button>
+                                <button
+                                    className="view-toggle-button"
+                                    onClick={handleOpenObservations}
+                                    type="button"
+                                >
+                                    Observations
+                                </button>
+                            </>
                         )}
                         <button 
                             className={`view-toggle-button ${viewMode === 'table' ? 'active' : ''}`}

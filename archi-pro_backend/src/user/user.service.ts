@@ -3,6 +3,7 @@ import { User, CreateUserDto } from './user';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Permission, PermissionCode, Role, RoleName } from './access-control';
+import { LoggingService } from '../logging/logging.service';
 @Injectable()
 export class UserService {
     private readonly restrictedPermissions = [
@@ -29,6 +30,7 @@ export class UserService {
         private readonly roleRepository: Repository<Role>,
         @InjectRepository(Permission)
         private readonly permissionRepository: Repository<Permission>,
+        private readonly loggingService: LoggingService,
     ) {}
 
     async registerUser(userData: CreateUserDto) {
@@ -54,15 +56,23 @@ export class UserService {
     }
 
     async deleteUser(userId: string) {
+        const user = await this.getUserById(userId);
+        await this.loggingService.recordAction({
+            userId,
+            group: user?.role?.name ?? 'USER',
+            action: 'USER_DELETED',
+            payload: { username: user?.username, email: user?.email },
+        });
         return await this.userRepository.delete({ id: userId });
     }
 
     async loginUser(email: string, password: string) {
         await this.ensureAccessControlSeeded();
-        return await this.userRepository.findOne({
+        const user = await this.userRepository.findOne({
             where: { email, password },
             relations: { role: { permissions: true } },
         });
+        return user;
     }
 
     private async ensureAccessControlSeeded() {

@@ -15,9 +15,12 @@ import ResearchPage from './pages/ResearchPage.tsx'
 import DesignPage from './pages/DesignPage.tsx'
 import ShadowPath from './pages/ShadowPath.tsx'
 import ChatPage from './pages/ChatPage.tsx'
+import ObservationPage from './pages/ObservationPage.tsx'
+import UnauthorizedPage from './pages/UnauthorizedPage.tsx'
 import { syncQueuedActions } from './api.ts'
 import { useNetworkStatus } from './hooks/useNetworkStatus.ts'
 import { clearQueuedActions, getQueuedActions } from './hooks/useNetworkStatus.ts'
+import ProtectedRoute from './components/ProtectedRoute.tsx'
 
 function App() {
   const isOnline  = useNetworkStatus();
@@ -88,17 +91,89 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/overview" element={<Overview />} />
-      <Route path="/addproject" element={<AddProject onAddProject={addProject} />} />
-      <Route path="/project/:id" element={<ProjectPage projects={projects} onDeleteProject={deleteProject} onUpdateProject={updateProject}/>} />
-      <Route path="/project/:projectId/site-analysis" element={<SiteAnalysisPage projects={projects} updateProject={updateProject}/>} />
-      <Route path="/project/:projectId/research" element={<ResearchPage projects={projects} updateProject={updateProject}/>} />
-      <Route path="/project/:projectId/design" element={<DesignPage projects={projects} updateProject={updateProject}/>} />
-      <Route path="/edit/:id" element={<EditPage projects={projects} onUpdateProject={updateProject}/>} />
+      <Route path="/unauthorized" element={<UnauthorizedPage />} />
+      <Route
+        path="/overview"
+        element={
+          <ProtectedRoute requiredPermissions={['PROJECT_VIEW']}>
+            <Overview />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/addproject"
+        element={
+          <ProtectedRoute requiredPermissions={['PROJECT_CREATE']}>
+            <AddProject onAddProject={addProject} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/project/:id"
+        element={
+          <ProtectedRoute requiredPermissions={['PROJECT_VIEW']}>
+            <ProjectPage projects={projects} onDeleteProject={deleteProject} onUpdateProject={updateProject} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/project/:projectId/site-analysis"
+        element={
+          <ProtectedRoute requiredPermissions={['PROJECT_VIEW']}>
+            <SiteAnalysisPage projects={projects} updateProject={updateProject} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/project/:projectId/research"
+        element={
+          <ProtectedRoute requiredPermissions={['PROJECT_VIEW']}>
+            <ResearchPage projects={projects} updateProject={updateProject} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/project/:projectId/design"
+        element={
+          <ProtectedRoute requiredPermissions={['PROJECT_VIEW']}>
+            <DesignPage projects={projects} updateProject={updateProject} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/edit/:id"
+        element={
+          <ProtectedRoute requiredPermissions={['PROJECT_UPDATE']}>
+            <EditPage projects={projects} onUpdateProject={updateProject} />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/register" element={<RegisterPage onRegisterUser={registerUser} />} />
       <Route path="/login" element={<LoginPage onLoginUser={loginUser} />} />
-      <Route path="/project/:projectId/shadow-path" element={<ShadowPath projects={projects} />} />
-      <Route path="/chat" element={<ChatPage />} />
+      <Route
+        path="/project/:projectId/shadow-path"
+        element={
+          <ProtectedRoute requiredPermissions={['PROJECT_VIEW']}>
+            <ShadowPath projects={projects} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/chat"
+        element={
+          <ProtectedRoute>
+            <ChatPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/observations"
+        element={
+          <ProtectedRoute requiredPermissions={['USER_MANAGE']}>
+            <ObservationPage />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   )
 }

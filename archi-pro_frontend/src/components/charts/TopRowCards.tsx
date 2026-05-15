@@ -3,7 +3,7 @@ import { getOverallStatistics, getOverallStatisticsByUserId } from '../../api';
 import { useState, useEffect } from 'react';
 
 async function statistics(userId : string) {
-    const stats = await getOverallStatisticsByUserId(userId);
+    const stats = userId ? await getOverallStatisticsByUserId(userId) : await getOverallStatistics();
     const total = stats.totalProjects;
     const avgProgress = stats.averageProgress;
     const avgHours = stats.averageWorkingHours;
@@ -18,6 +18,9 @@ function TopRowCards(props: { refreshKey: number, userId: string  }) {
     const [stats, setStats] = useState({ total: 0, avgProgress: 0, avgHours: 0, deadlines: 0 });
 
     useEffect(() => {
+        if (!props.userId) {
+            return;
+        }
         statistics(props.userId).then(setStats);
     }, [props.refreshKey, props.userId]);
 
