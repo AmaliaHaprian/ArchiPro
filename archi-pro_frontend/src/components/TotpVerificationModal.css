@@ -1,0 +1,136 @@
+.totp-verification-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.totp-verification-modal {
+    background-color: var(--bg-secondary, #fff);
+    border-radius: 8px;
+    padding: 40px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.totp-verification-modal h2 {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+    color: var(--text-primary, #333);
+    text-align: center;
+}
+
+.modal-subtitle {
+    margin: 0 0 20px 0;
+    font-size: 14px;
+    color: var(--text-secondary, #666);
+    text-align: center;
+}
+
+.totp-verification-modal .form-group {
+    margin-bottom: 20px;
+}
+
+.totp-verification-modal input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color, #ccc);
+    border-radius: 4px;
+    font-size: 16px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 4px;
+    text-align: center;
+    background-color: var(--input-bg, #fff);
+    color: var(--text-primary, #333);
+    box-sizing: border-box;
+}
+
+.totp-verification-modal input:focus {
+    outline: none;
+    border-color: var(--primary-color, #007bff);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.totp-verification-modal input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.totp-input {
+    font-size: 32px;
+    letter-spacing: 8px;
+}
+
+.verify-button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-color, #007bff);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background-color 0.3s;
+}
+
+.verify-button:hover:not(:disabled) {
+    background-color: var(--primary-hover, #0056b3);
+}
+
+.verify-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.backup-code-button {
+    width: 100%;
+    padding: 10px;
+    background-color: transparent;
+    color: var(--primary-color, #007bff);
+    border: 1px solid var(--primary-color, #007bff);
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.backup-code-button:hover:not(:disabled) {
+    background-color: var(--primary-color, #007bff);
+    color: white;
+}
+
+.backup-code-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.error-message {
+    background-color: #fee;
+    color: #c33;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    text-align: center;
+}

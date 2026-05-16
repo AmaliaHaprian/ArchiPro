@@ -17,6 +17,7 @@ import ShadowPath from './pages/ShadowPath.tsx'
 import ChatPage from './pages/ChatPage.tsx'
 import ObservationPage from './pages/ObservationPage.tsx'
 import UnauthorizedPage from './pages/UnauthorizedPage.tsx'
+import TotpSetupPage from './pages/TotpSetupPage.tsx'
 import { syncQueuedActions } from './api.ts'
 import { useNetworkStatus } from './hooks/useNetworkStatus.ts'
 import { clearQueuedActions, getQueuedActions } from './hooks/useNetworkStatus.ts'
@@ -163,6 +164,14 @@ function App() {
         element={
           <ProtectedRoute>
             <ChatPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/security/totp-setup"
+        element={
+          <ProtectedRoute>
+            <TotpSetupPage />
           </ProtectedRoute>
         }
       />

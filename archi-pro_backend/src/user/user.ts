@@ -15,6 +15,12 @@ export class User {
     email: string;
     @Column()
     password: string;
+    @Column({ nullable: true })
+    totp_secret?: string;
+    @Column({ default: false })
+    totp_enabled: boolean;
+    @Column('text', { nullable: true })
+    totp_backup_codes?: string;
     @ManyToOne('Role', 'users', { nullable: false })
     @JoinColumn({ name: 'roleId', referencedColumnName: 'id' })
     role!: Role;

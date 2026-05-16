@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import './LoginForm.css';
 import { loginUser } from "../api";
 import { AuthContext } from "./AuthContext";
+import TotpVerificationModal from "./TotpVerificationModal";
 
 function LoginForm({ onLoginUser }: { onLoginUser: (username: string, password: string) => void }) {
     const navigate = useNavigate();
@@ -12,6 +13,8 @@ function LoginForm({ onLoginUser }: { onLoginUser: (username: string, password: 
         email: '',
         password: ''
     });
+    const [mfaRequired, setMfaRequired] = useState(false);
+    const [mfaToken, setMfaToken] = useState('');
     const auth = useContext(AuthContext);
     if (!auth) {
         throw new Error('AuthContext is not available');
@@ -49,16 +52,45 @@ function LoginForm({ onLoginUser }: { onLoginUser: (username: string, password: 
                 const payload  = await loginUser(email, password);
 
                 console.log('Login response:', payload);
-                auth.login(payload.access_token, payload.user);
                 
-                onLoginUser(email, password);
-                navigate('/overview');
+                // Check if MFA is required
+                if ('mfa_required' in payload && payload.mfa_required) {
+                    setMfaToken(payload.mfa_token);
+                    setMfaRequired(true);
+                } else {
+                    // No MFA required, direct login
+                    auth.login(payload.access_token, payload.user);
+                    onLoginUser(email, password);
+                    navigate('/overview');
+                }
             } catch (error) {
                 const message = error instanceof Error ? error.message : 'Login failed.';
                 setErrors(prev => ({ ...prev, email: message }));
             }
         }
     };
+
+    const handleMfaVerificationSuccess = (token: string, user: any) => {
+        auth.login(token, user);
+        onLoginUser(email, password);
+        setMfaRequired(false);
+        navigate('/overview');
+    };
+
+    const handleMfaVerificationError = (error: string) => {
+        console.error('MFA verification error:', error);
+    };
+
+    if (mfaRequired && mfaToken) {
+        return (
+            <TotpVerificationModal
+                mfaToken={mfaToken}
+                onVerificationSuccess={handleMfaVerificationSuccess}
+                onVerificationError={handleMfaVerificationError}
+            />
+        );
+    }
+
     return (
         <div className="login-form">
             <h2>Login</h2>

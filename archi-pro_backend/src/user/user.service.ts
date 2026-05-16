@@ -50,6 +50,10 @@ export class UserService {
     async createUser(user: User) {
         return await this.userRepository.save(user);
     }
+
+    async updateUser(user: User) {
+        return await this.userRepository.save(user);
+    }
     async getUserByEmail(email: string) {
         return await this.userRepository.findOne({
             where: { email },

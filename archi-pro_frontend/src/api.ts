@@ -221,15 +221,28 @@ export async function registerUser(user: CreateUserDto) {
     return await response.json();
 }
 
-export async function loginUser(username: string, password: string) : Promise<AuthPayload> {
+export async function loginUser(username: string, password: string) : Promise<AuthPayload | { mfa_required: true; mfa_token: string; mfa_type: 'totp' }> {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email: username, password }),
-    }); 
-    const { access_token, user } = await response.json() as { access_token: string; user: User };
+    });
+
+    const data = await response.json() as any;
+
+    // Handle MFA required response
+    if (data.mfa_required && data.mfa_token) {
+        return {
+            mfa_required: true,
+            mfa_token: data.mfa_token,
+            mfa_type: data.mfa_type,
+        };
+    }
+
+    // Handle successful login
+    const { access_token, user } = data as { access_token: string; user: User };
     if (access_token && user) {
         localStorage.removeItem('token');
         localStorage.setItem('user', JSON.stringify(user));
@@ -370,6 +383,82 @@ export async function getTopCompletedByUserId(userId: string) : Promise<Project[
         throw new Error('Network response was not ok');
     }
     return await response.json();
+}
+
+// ===================== TOTP Functions =====================
+
+export async function generateTotpSecret(): Promise<{ secret: string; qrCode: string; backupCodes: string[] }> {
+    const response = await fetch(`${API_BASE_URL}/auth/totp/setup`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
+    });
+    if (!response.ok) {
+        throw new Error('Failed to generate TOTP secret');
+    }
+    return await response.json();
+}
+
+export async function verifyTotpSetup(totpCode: string, backupCodes: string[]): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(`${API_BASE_URL}/auth/totp/verify-setup`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
+        body: JSON.stringify({ totpCode, backupCodes }),
+    });
+    if (!response.ok) {
+        throw new Error('Failed to verify TOTP setup');
+    }
+    return await response.json();
+}
+
+export async function verifyTotpLogin(mfaToken: string, totpCode: string): Promise<{ access_token: string; user: User }> {
+    const response = await fetch(`${API_BASE_URL}/auth/totp/verify`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${mfaToken}`,
+        },
+        body: JSON.stringify({ totpCode }),
+    });
+    if (!response.ok) {
+        throw new Error('Invalid TOTP code');
+    }
+    const data = await response.json();
+    const { access_token, user } = data as { access_token: string; user: User };
+    if (access_token && user) {
+        localStorage.removeItem('token');
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('authToken', access_token);
+        localStorage.setItem('authUser', JSON.stringify(user));
+    }
+    return { access_token, user };
+}
+
+export async function verifyBackupCodeLogin(mfaToken: string, backupCode: string): Promise<{ access_token: string; user: User }> {
+    const response = await fetch(`${API_BASE_URL}/auth/totp/verify-backup`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${mfaToken}`,
+        },
+        body: JSON.stringify({ backupCode }),
+    });
+    if (!response.ok) {
+        throw new Error('Invalid backup code');
+    }
+    const data = await response.json();
+    const { access_token, user } = data as { access_token: string; user: User };
+    if (access_token && user) {
+        localStorage.removeItem('token');
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('authToken', access_token);
+        localStorage.setItem('authUser', JSON.stringify(user));
+    }
+    return { access_token, user };
 }
 
 export async function getOverallStatisticsByUserId(userId: string) {

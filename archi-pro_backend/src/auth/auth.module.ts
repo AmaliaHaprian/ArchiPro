@@ -7,6 +7,7 @@ import { JwtStrategy } from './jwtService';
 import { UserModule } from 'src/user/user.module';
 import { LoggingModule } from 'src/logging/logging.module';
 import { getJwtExpiresIn, getJwtSecret } from './jwt.config';
+import { TotpService } from './totp.service';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { getJwtExpiresIn, getJwtSecret } from './jwt.config';
       }),
     }),
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, TotpService],
   controllers: [AuthController],
   exports: [AuthService, JwtModule],
 })

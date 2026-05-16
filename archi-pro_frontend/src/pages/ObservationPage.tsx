@@ -27,13 +27,18 @@ function ObservationPage() {
       const userStr = localStorage.getItem('user');
       if (!userStr) return null;
       try {
-        return JSON.parse(userStr) as { username: string; role?: string; roleName?: string };
+        const user = JSON.parse(userStr) as {
+          username?: string;
+          role?: string;
+        };
+        const roleName = user.role;
+        return { username: user.username ?? '', roleName };
       } catch {
         return null;
       }
     })();
 
-    if (!currentUser || (currentUser.role ?? currentUser.roleName) !== 'ADMIN') {
+    if (!currentUser || currentUser.roleName !== 'ADMIN') {
       navigate('/overview');
       return;
     }

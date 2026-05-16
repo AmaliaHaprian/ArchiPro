@@ -3,9 +3,15 @@ import { useNavigate } from "react-router-dom";
 import './RegisterForm.css';
 import type { User } from '../models/User';
 import { registerUser } from "../api";
+import { AuthContext } from "./AuthContext";
+import { useContext } from "react";
 
 function RegisterForm({onRegisterUser}: { onRegisterUser: (user: User) => void }) {
     const navigate = useNavigate();
+    const auth = useContext(AuthContext);
+    if (!auth) {
+        throw new Error('AuthContext is not available');
+    }
 
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
@@ -61,16 +67,17 @@ function RegisterForm({onRegisterUser}: { onRegisterUser: (user: User) => void }
             }
             console.log('Registered with:', registeredUser);
             const storedUser = {
-                id: registeredUser.id,
-                userId: registeredUser.id,
-                username: registeredUser.username,
-                email: registeredUser.email,
-                role: registeredUser.role ?? 'USER',
-                permissions: registeredUser.permissions ?? [],
+                id: registeredUser.user.id,
+                userId: registeredUser.user.id,
+                username: registeredUser.user.username,
+                email: registeredUser.user.email,
+                role: registeredUser.user.role ?? 'USER',
+                permissions: registeredUser.user.permissions ?? [],
             };
             onRegisterUser(storedUser as User);
+            auth.login(registeredUser.access_token, storedUser as User);
             localStorage.setItem('user', JSON.stringify(storedUser));
-            navigate('/overview');
+            navigate('/security/totp-setup');
         }
     };
 
