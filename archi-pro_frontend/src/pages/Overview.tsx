@@ -1,18 +1,16 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { getCookieValue } from '../utils/cookies';
 import { useNavigate } from 'react-router-dom';
-import type { Project } from "../models/Project";
 import './Overview.css'
 import { useUserPreferences } from '../hooks/useUserPreferences';
 import ThemeSwitcher from "../components/ThemeSwitcher";
 import { useEffect } from "react";
-import { filterAndSearchProjects } from "../api";
 import { startFakeDataGeneration, stopFakeDataGeneration } from "../api";
 import { io } from "socket.io-client";
 import { API_BASE_URL } from "../api";
-import PaginatedProjectsTable from "../components/PaginatedProjectsTable";
 import StatisticsPage from "./StatisticsPage";
 import InfiniteProjects from "../components/InfiniteProjects";
+import { AuthContext } from "../components/AuthContext";
 
 const socket = io(`${API_BASE_URL}/`, {
         transports: ['websocket', 'polling'],
@@ -26,6 +24,7 @@ function Overview() {
     const [spamProjects, setSpamProjects] = useState<string>('Start');
     const [currentUser, setCurrentUser] = useState<{ username: string; userId: string; role: string; permissions: string[] } | null>(null);
     const [chartsRefreshKey, setChartsRefreshKey] = useState(0);
+    const auth = useContext(AuthContext);
 
     useUserPreferences(
         { theme },
@@ -41,11 +40,17 @@ function Overview() {
     useEffect(() => {
         const userStr = localStorage.getItem('user');
         if (userStr) {
-            const user = JSON.parse(userStr);
+            const user = JSON.parse(userStr) as {
+                username?: string;
+                userId?: string;
+                id?: string;
+                role?: string;
+                permissions?: string[];
+            };
             setCurrentUser({
-                username: user.username,
-                userId: user.userId ?? user.id,
-                role: user.role ?? user.roleName ?? 'USER',
+                username: user.username ?? '',
+                userId: user.userId ?? user.id ?? '',
+                role: user.role ?? 'USER',
                 permissions: user.permissions ?? [],
             });
         }
@@ -53,6 +58,8 @@ function Overview() {
 
     const handleLogout = () => {
         localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        auth?.logout();
         setCurrentUser(null);
         navigate('/login');
     }

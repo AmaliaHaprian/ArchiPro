@@ -1,9 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
-
-type StoredUser = {
-  role?: string;
-  permissions?: string[];
-};
+import { AuthContext } from './AuthContext';
+import { useContext } from 'react';
 
 type ProtectedRouteProps = {
   children: React.ReactElement;
@@ -11,23 +8,13 @@ type ProtectedRouteProps = {
   allowedRoles?: string[];
 };
 
-function readStoredUser(): StoredUser | null {
-  const storedUser = localStorage.getItem('user');
-  if (!storedUser) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(storedUser) as StoredUser;
-  } catch {
-    return null;
-  }
-}
-
 export default function ProtectedRoute({ children, requiredPermissions = [], allowedRoles = [] }: ProtectedRouteProps) {
   const location = useLocation();
-  const user = readStoredUser();
-
+  const auth = useContext(AuthContext);
+      if (!auth) {
+          throw new Error('AuthContext is not available');
+      }
+  const user = auth.user;
   if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
@@ -41,8 +28,8 @@ export default function ProtectedRoute({ children, requiredPermissions = [], all
   }
 
   if (requiredPermissions.length > 0) {
-    const userPermissions = new Set(user.permissions ?? []);
-    const hasPermission = requiredPermissions.some(permission => userPermissions.has(permission));
+    const permissionCodes = new Set<string>(user.permissions ?? []);
+    const hasPermission = requiredPermissions.some(permission => permissionCodes.has(permission));
 
     if (!hasPermission) {
       return <Navigate to="/unauthorized" replace />;

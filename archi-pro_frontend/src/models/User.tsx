@@ -4,24 +4,22 @@ export interface Permission {
     description: string;
 }
 
-export interface Role {
-    id: string;
-    name: 'ADMIN' | 'USER' | string;
-    description: string;
-    permissions: Permission[];
-}
-
 export interface User {
     id: string;
     username: string;
     email: string;
-    password: string;
-    role?: Role;
+    role: 'ADMIN' | 'USER' | string;
+    permissions: string[];
 }
 
 export interface CreateUserDto {
     username: string;
     email: string;
     password: string;
-    roleName?: Role['name'];
+    roleName?: 'ADMIN' | 'USER' | string;
+}
+
+export interface AuthPayload {
+    access_token: string;
+    user: User;
 }

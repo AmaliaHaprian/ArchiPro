@@ -1,6 +1,6 @@
 import type { Action } from "./models/Action";
 import type { Project } from "./models/Project";
-import type { CreateUserDto, User } from "./models/User";
+import type { AuthPayload, CreateUserDto, User } from "./models/User";
 
 const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 const fallbackApiBaseUrl = `${window.location.protocol}//${window.location.hostname}:3000`;
@@ -10,32 +10,16 @@ export const API_BASE_URL = (configuredApiBaseUrl && configuredApiBaseUrl.length
     : fallbackApiBaseUrl
 ).replace(/\/+$/, '');
 
-function buildUserHeaders(headers: HeadersInit = {}): HeadersInit {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
-        return headers;
-    }
-
-    try {
-        const user = JSON.parse(storedUser) as { userId?: string; id?: string };
-        const userId = user.userId ?? user.id;
-        if (!userId) {
-            return headers;
-        }
-
-        return {
-            ...headers,
-            'x-user-id': userId,
-        };
-    } catch {
-        return headers;
-    }
+function getAuthToken(): string | null {
+    return localStorage.getItem('authToken') ?? localStorage.getItem('token');
 }
 
 export async function fetchProjects(page: number) : Promise<any> {
     const response = await fetch(`${API_BASE_URL}/projects?page=${page}`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -48,7 +32,7 @@ export async function saveProject(project: any) : Promise<Project> {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            ...buildUserHeaders(),
+            Authorization: `Bearer ${getAuthToken()}`,
         },
         body: JSON.stringify(project),
     });
@@ -61,7 +45,9 @@ export async function saveProject(project: any) : Promise<Project> {
 export async function deleteProject(projectId: string) : Promise<void> {
     const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
         method: 'DELETE',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -71,7 +57,9 @@ export async function deleteProject(projectId: string) : Promise<void> {
 export async function fetchProjectById(projectId: string) : Promise<Project> {
     const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -84,7 +72,7 @@ export async function updateProject(projectId: string, updatedData: any) : Promi
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
-            ...buildUserHeaders(),
+            Authorization: `Bearer ${getAuthToken()}`,
         },
         body: JSON.stringify(updatedData),
     });
@@ -97,7 +85,9 @@ export async function updateProject(projectId: string, updatedData: any) : Promi
 export async function getProjectsByCategory() : Promise<Record<string, number>> {
     const response = await fetch(`${API_BASE_URL}/statistics/projects-by-category`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -108,7 +98,9 @@ export async function getProjectsByCategory() : Promise<Record<string, number>> 
 export async function getStageBottleneck() : Promise<Record<string, number>> {
     const response = await fetch(`${API_BASE_URL}/statistics/stage-bottleneck`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -119,7 +111,9 @@ export async function getStageBottleneck() : Promise<Record<string, number>> {
 export async function getStatusDistribution() : Promise<Record<string, number>> {
     const response = await fetch(`${API_BASE_URL}/statistics/status-distribution`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -130,7 +124,9 @@ export async function getStatusDistribution() : Promise<Record<string, number>> 
 export async function getTopCompleted() : Promise<Project[]> {
     const response = await fetch(`${API_BASE_URL}/statistics/top-completed-projects`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -142,7 +138,9 @@ export async function getOverallStatistics() {
     console.log("Top row statistics called");
     const response = await fetch(`${API_BASE_URL}/statistics/overall-statistics`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -152,12 +150,11 @@ export async function getOverallStatistics() {
 
 
 export async function filterAndSearchProjects(title?: string, category?: string, status?: string) : Promise<Project[]> {
-    // const params = new URLSearchParams();
-    // if (status) params.append('status', status);
-    // if (category) params.append('category', category);
     const response = await fetch(`${API_BASE_URL}/projects/filter?title=${encodeURIComponent(title || '')}&category=${encodeURIComponent(category || '')}&status=${encodeURIComponent(status || '')}`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -170,7 +167,7 @@ export async function syncQueuedActions(actionQueue: Action[]) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            ...buildUserHeaders(),
+            Authorization: `Bearer ${getAuthToken()}`,
         },
         body: JSON.stringify(actionQueue ),
     });
@@ -185,7 +182,9 @@ export async function startFakeDataGeneration(userId: string) {
     console.log('Starting fake data generation...');
     const response = await fetch(`${API_BASE_URL}/projects/start-fake-data?userId=${encodeURIComponent(userId)}`, {
         method: 'POST',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
         
     });
     if (!response.ok) {
@@ -198,7 +197,9 @@ export async function stopFakeDataGeneration() {
     console.log('Stopping fake data generation...');
     const response = await fetch(`${API_BASE_URL}/projects/stop-fake-data`, {
         method: 'POST',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -207,7 +208,7 @@ export async function stopFakeDataGeneration() {
 }
 
 export async function registerUser(user: CreateUserDto) {
-    const response = await fetch(`${API_BASE_URL}/user/auth/register`, {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -220,40 +221,33 @@ export async function registerUser(user: CreateUserDto) {
     return await response.json();
 }
 
-export async function loginUser(username: string, password: string) : Promise<User> {
-    const response = await fetch(`${API_BASE_URL}/user/auth/login`, {
+export async function loginUser(username: string, password: string) : Promise<AuthPayload> {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email: username, password }),
     }); 
-    const rawBody = await response.text();
-
+    const { access_token, user } = await response.json() as { access_token: string; user: User };
+    if (access_token && user) {
+        localStorage.removeItem('token');
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('authToken', access_token);
+        localStorage.setItem('authUser', JSON.stringify(user));
+    }
     if (!response.ok) {
-        let message = 'Network response was not ok';
-        if (rawBody.trim().length > 0) {
-            try {
-                const errorPayload = JSON.parse(rawBody);
-                message = errorPayload?.message || message;
-            } catch {
-                message = rawBody;
-            }
-        }
-        throw new Error(message);
+        throw new Error('Network response was not ok');
     }
-
-    if (rawBody.trim().length === 0) {
-        throw new Error('Empty response from login endpoint');
-    }
-
-    return JSON.parse(rawBody) as User;
+    return { access_token, user };
 }
 
 export async function getUserById(userId: string) : Promise<User> {
     const response = await fetch(`${API_BASE_URL}/user/${userId}`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -264,7 +258,9 @@ export async function getUserById(userId: string) : Promise<User> {
 export async function fetchSuspiciousObservations() {
     const response = await fetch(`${API_BASE_URL}/logging/observations`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -275,7 +271,9 @@ export async function fetchSuspiciousObservations() {
 export async function resolveSuspiciousObservation(id: string) {
     const response = await fetch(`${API_BASE_URL}/logging/observations/${id}/resolve`, {
         method: 'PATCH',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -286,7 +284,9 @@ export async function resolveSuspiciousObservation(id: string) {
 export async function fetchChatMessages() {
     const response = await fetch(`${API_BASE_URL}/chat/messages`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -297,7 +297,9 @@ export async function fetchChatMessages() {
 export async function getProjectsByUserId(userId: string) : Promise<Project[]> {
     const response = await fetch(`${API_BASE_URL}/user/${userId}/projects`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -308,7 +310,9 @@ export async function getProjectsByUserId(userId: string) : Promise<Project[]> {
 export async function getPaginatedFilteredProjectsByUserId(userId: string, page: number, title?: string, category?: string, status?: string) : Promise<Project[]> {
     const response = await fetch(`${API_BASE_URL}/user/${userId}/projects/filter?title=${encodeURIComponent(title || '')}&category=${encodeURIComponent(category || '')}&status=${encodeURIComponent(status || '')}&page=${page}`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -319,7 +323,9 @@ export async function getPaginatedFilteredProjectsByUserId(userId: string, page:
 export async function getProjectsByCategoryByUserId(userId: string) : Promise<Record<string, number>> {
     const response = await fetch(`${API_BASE_URL}/statistics/projects-by-category/${userId}`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -330,7 +336,9 @@ export async function getProjectsByCategoryByUserId(userId: string) : Promise<Re
 export async function getStageBottleneckByUserId(userId: string) : Promise<Record<string, number>> {
     const response = await fetch(`${API_BASE_URL}/statistics/stage-bottleneck/${userId}`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -341,8 +349,10 @@ export async function getStageBottleneckByUserId(userId: string) : Promise<Recor
 export async function getStatusDistributionByUserId(userId: string) : Promise<Record<string, number>> {
     const response = await fetch(`${API_BASE_URL}/statistics/status-distribution/${userId}`, {
         method: 'GET',
-        headers: buildUserHeaders(),
-    }); 
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
+    });
     if (!response.ok) {
         throw new Error('Network response was not ok');
     }
@@ -352,7 +362,9 @@ export async function getStatusDistributionByUserId(userId: string) : Promise<Re
 export async function getTopCompletedByUserId(userId: string) : Promise<Project[]> {
     const response = await fetch(`${API_BASE_URL}/statistics/top-completed-projects/${userId}`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -363,7 +375,9 @@ export async function getTopCompletedByUserId(userId: string) : Promise<Project[
 export async function getOverallStatisticsByUserId(userId: string) {
     const response = await fetch(`${API_BASE_URL}/statistics/overall-statistics/${userId}`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -372,9 +386,12 @@ export async function getOverallStatisticsByUserId(userId: string) {
 }
 
 export async function filterAndSearchProjectsByUserId(userId: string, page: number, title?: string, category?: string, status?: string) : Promise<Project[]> {
+    console.log('token:', localStorage.getItem('token') ?? localStorage.getItem('authToken'));
     const response = await fetch(`${API_BASE_URL}/projects/user/${userId}/filter?title=${encodeURIComponent(title || '')}&category=${encodeURIComponent(category || '')}&status=${encodeURIComponent(status || '')}&page=${page}`, {
         method: 'GET',
-        headers: buildUserHeaders(),
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
     });
     if (!response.ok) {
         throw new Error('Network response was not ok');

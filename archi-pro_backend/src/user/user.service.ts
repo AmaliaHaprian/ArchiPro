@@ -4,6 +4,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Permission, PermissionCode, Role, RoleName } from './access-control';
 import { LoggingService } from '../logging/logging.service';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+
 @Injectable()
 export class UserService {
     private readonly restrictedPermissions = [
@@ -11,6 +14,7 @@ export class UserService {
         PermissionCode.PROJECT_CREATE,
         PermissionCode.PROJECT_UPDATE,
         PermissionCode.PROJECT_DELETE,
+        PermissionCode.CHAT,
     ];
 
     private readonly adminPermissions = [
@@ -18,6 +22,8 @@ export class UserService {
         PermissionCode.PROJECT_CREATE,
         PermissionCode.PROJECT_UPDATE,
         PermissionCode.PROJECT_DELETE,
+        PermissionCode.MANAGE_PROJECTS,
+        PermissionCode.CHAT,
         PermissionCode.USER_MANAGE,
         PermissionCode.ROLE_MANAGE,
         PermissionCode.PERMISSION_MANAGE,
@@ -31,15 +37,8 @@ export class UserService {
         @InjectRepository(Permission)
         private readonly permissionRepository: Repository<Permission>,
         private readonly loggingService: LoggingService,
+        private readonly jwtService: JwtService,
     ) {}
-
-    async registerUser(userData: CreateUserDto) {
-        await this.ensureAccessControlSeeded();
-        const role = await this.getRoleByName(userData.roleName ?? RoleName.USER);
-        const user = new User(userData.username, userData.email, userData.password, undefined, role);
-        const createdUser = await this.userRepository.save(user);
-        return this.getUserById(createdUser.id);
-    }
 
     async getUserById(userId: string) {
         return await this.userRepository.findOne({
@@ -48,6 +47,9 @@ export class UserService {
         });
     }
 
+    async createUser(user: User) {
+        return await this.userRepository.save(user);
+    }
     async getUserByEmail(email: string) {
         return await this.userRepository.findOne({
             where: { email },
@@ -66,20 +68,16 @@ export class UserService {
         return await this.userRepository.delete({ id: userId });
     }
 
-    async loginUser(email: string, password: string) {
-        await this.ensureAccessControlSeeded();
-        const user = await this.userRepository.findOne({
-            where: { email, password },
-            relations: { role: { permissions: true } },
-        });
-        return user;
-    }
+    public async ensureAccessControlSeeded() {
+        const existingPermissions = await this.permissionRepository.find();
+        const existingCodes = new Set(existingPermissions.map(permission => permission.code));
 
-    private async ensureAccessControlSeeded() {
-        const permissionCount = await this.permissionRepository.count();
-        if (permissionCount === 0) {
-            const seedPermissions = Object.values(PermissionCode).map(code => new Permission(code, this.describePermission(code)));
-            await this.permissionRepository.save(seedPermissions);
+        const missingPermissions = Object.values(PermissionCode)
+            .filter(code => !existingCodes.has(code))
+            .map(code => new Permission(code, this.describePermission(code)));
+
+        if (missingPermissions.length > 0) {
+            await this.permissionRepository.save(missingPermissions);
         }
 
         const permissions = await this.permissionRepository.find();
@@ -112,7 +110,7 @@ export class UserService {
         }
     }
 
-    private async getRoleByName(name: RoleName) {
+    public async getRoleByName(name: RoleName) {
         const role = await this.roleRepository.findOne({
             where: { name },
             relations: { permissions: true },
@@ -135,6 +133,10 @@ export class UserService {
                 return 'Update projects';
             case PermissionCode.PROJECT_DELETE:
                 return 'Delete projects';
+            case PermissionCode.MANAGE_PROJECTS:
+                return 'Manage projects';
+            case PermissionCode.CHAT:
+                return 'Chat';
             case PermissionCode.USER_MANAGE:
                 return 'Manage users';
             case PermissionCode.ROLE_MANAGE:

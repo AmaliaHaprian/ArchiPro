@@ -22,11 +22,17 @@ function ChatPage() {
     useEffect(() => {
         const userStr = localStorage.getItem('user');
         if (userStr) {
-            const user = JSON.parse(userStr);
+            const user = JSON.parse(userStr) as {
+                username?: string;
+                userId?: string;
+                id?: string;
+                role?: string;
+                permissions?: string[];
+            };
             setCurrentUser({
-                username: user.username,
-                id: user.userId ?? user.id,
-                role: user.role ?? user.roleName ?? 'USER',
+                username: user.username ?? '',
+                id: user.userId ?? user.id ?? '',
+                role: user.role ?? 'USER',
                 permissions: user.permissions ?? [],
             });
             console.log(user);

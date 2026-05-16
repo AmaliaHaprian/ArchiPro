@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import './RegisterForm.css';
-import type { Permission, User } from '../models/User';
+import type { User } from '../models/User';
 import { registerUser } from "../api";
 
 function RegisterForm({onRegisterUser}: { onRegisterUser: (user: User) => void }) {
@@ -65,9 +65,10 @@ function RegisterForm({onRegisterUser}: { onRegisterUser: (user: User) => void }
                 userId: registeredUser.id,
                 username: registeredUser.username,
                 email: registeredUser.email,
-                role: registeredUser.role?.name ?? 'USER',
-                permissions: registeredUser.role?.permissions?.map((permission: Permission) => permission.code) ?? [],
+                role: registeredUser.role ?? 'USER',
+                permissions: registeredUser.permissions ?? [],
             };
+            onRegisterUser(storedUser as User);
             localStorage.setItem('user', JSON.stringify(storedUser));
             navigate('/overview');
         }

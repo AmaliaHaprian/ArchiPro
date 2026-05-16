@@ -8,6 +8,7 @@ import { ChatModule } from './chat/chat.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LoggingModule } from './logging/logging.module';
+import { AuthModule } from './auth/auth.module';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ dotenv.config();
     }),
     MongooseModule.forRoot('mongodb://mongo:mongo123@localhost:27017/archipro_chat?authSource=admin'),
     LoggingModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

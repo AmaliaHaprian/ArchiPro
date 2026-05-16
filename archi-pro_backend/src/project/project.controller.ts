@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Post, Put, Body, Param, Logger, NotFoundException, HttpCode, Query, DefaultValuePipe, UseInterceptors, Headers, ForbiddenException } from '@nestjs/common';
+import { Controller, Delete, Get, Post, Put, Body, Param, Logger, NotFoundException, HttpCode, Query, DefaultValuePipe, UseInterceptors, Headers, ForbiddenException, UseGuards, Req } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { ProjectMapper } from './projectMapper';
 import { CreateProjectDto } from './dtos/createProjectDto';
@@ -8,7 +8,13 @@ import type { Action } from './Project';
 import { LogInterceptor } from '../logging/logInterceptor';
 import { AccessControlService } from '../user/access-control.service';
 import { PermissionCode } from '../user/access-control';
+import { Request } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
+import { de } from '@faker-js/faker';
+import { PermissionGuard } from 'src/auth/permission.guard';
+import { RequirePermissions } from 'src/auth/require-permission.decorator';
 
+@UseGuards(JwtAuthGuard, PermissionGuard)
 @Controller('projects')
 @UseInterceptors(LogInterceptor)
 export class ProjectController {
@@ -21,7 +27,9 @@ export class ProjectController {
     ) {}
 
     @Get()
-    async getAllProjects(@Headers('x-user-id') requesterUserId: string, @Query('page') page: number=1 ) {
+    @RequirePermissions(PermissionCode.PROJECT_VIEW)
+    async getAllProjects(@Request() request, @Query('page') page: number=1 ) {
+        const requesterUserId = request.user?.userId;
         await this.accessControlService.requirePermission(requesterUserId, PermissionCode.PROJECT_VIEW);
         this.logger.log('GET /projects called');
         const projects = await this.projectService.getPaginated(page);
@@ -30,10 +38,12 @@ export class ProjectController {
     }
 
     @Get('filter')
-    async filterProjects(@Headers('x-user-id') requesterUserId: string, @Query('page') page: number=1,
+    @RequirePermissions(PermissionCode.PROJECT_VIEW)
+    async filterProjects(@Request() request, @Query('page') page: number=1,
                     @Query('title', new DefaultValuePipe('')) title: string,
                     @Query('category', new DefaultValuePipe('')) category?: string, 
                     @Query('status', new DefaultValuePipe('')) status?: string) {
+        const requesterUserId = request.user?.userId;
         await this.accessControlService.requirePermission(requesterUserId, PermissionCode.PROJECT_VIEW);
         this.logger.log(`GET /projects/filter?category=${category}&status=${status} called`);
         const filter: ProjectFilter = {
@@ -45,7 +55,9 @@ export class ProjectController {
     }
 
     @Get(':id')
-    async getProjectById(@Headers('x-user-id') requesterUserId: string, @Param('id') id: string) {
+    @RequirePermissions(PermissionCode.PROJECT_VIEW)
+    async getProjectById(@Request() request, @Param('id') id: string) {
+        const requesterUserId = request.user?.userId;
         this.logger.log(`GET /projects/${id} called`);
         const project = await this.projectService.findProjectById(id);
         if (!project) {
@@ -58,7 +70,9 @@ export class ProjectController {
 
     @Post()
     @HttpCode(201)
-    async createProject(@Headers('x-user-id') requesterUserId: string, @Body() createProjectDto: CreateProjectDto) {
+    @RequirePermissions(PermissionCode.PROJECT_CREATE)
+    async createProject(@Request() request, @Body() createProjectDto: CreateProjectDto) {
+        const requesterUserId = request.user?.userId;
         const requester = await this.accessControlService.requirePermission(requesterUserId, PermissionCode.PROJECT_CREATE);
         if (requester.role?.name !== 'ADMIN' && createProjectDto.userId !== requester.id) {
             throw new ForbiddenException('Cannot create a project for another user');
@@ -72,7 +86,9 @@ export class ProjectController {
 
     @Delete(':id')
     @HttpCode(204)
-    async deleteProject(@Headers('x-user-id') requesterUserId: string, @Param('id') id: string) {
+    @RequirePermissions(PermissionCode.PROJECT_DELETE)
+    async deleteProject(@Request() request, @Param('id') id: string) {
+        const requesterUserId = request.user?.userId;
         this.logger.log(`DELETE /projects/${id} called`);
         
         const existingProject = await this.projectService.findProjectById(id);
@@ -88,8 +104,10 @@ export class ProjectController {
     }
 
     @Put(':id')
+    @RequirePermissions(PermissionCode.PROJECT_UPDATE)
     @HttpCode(200)
-    async updateProject(@Headers('x-user-id') requesterUserId: string, @Param('id') id: string, @Body() updateProjectDto: UpdateProjectDto) {
+    async updateProject(@Request() request, @Param('id') id: string, @Body() updateProjectDto: UpdateProjectDto) {
+        const requesterUserId = request.user?.userId;
         this.logger.log(`PUT /projects/${id} payload: ${JSON.stringify(updateProjectDto)}`);
         
         const existingProject = await this.projectService.findProjectById(id);
@@ -109,7 +127,9 @@ export class ProjectController {
 
     @Post('/sync')
     @HttpCode(200)
-    async syncOfflineData(@Headers('x-user-id') requesterUserId: string, @Body() actionQueue: Action[]) {
+    @RequirePermissions(PermissionCode.PROJECT_CREATE)
+    async syncOfflineData(@Request() request, @Body() actionQueue: Action[]) {
+        const requesterUserId = request.user?.userId;
         await this.accessControlService.requirePermission(requesterUserId, PermissionCode.PROJECT_CREATE);
         this.logger.log(`POST /projects/sync payload: ${JSON.stringify(actionQueue)}`);
         await this.projectService.syncOfflineData(actionQueue);
@@ -117,8 +137,10 @@ export class ProjectController {
     }
 
     @Post('start-fake-data')
-    async startFakeDataGeneration(@Headers('x-user-id') requesterUserId: string, @Query('userId') userId: string) {
-        const requester = await this.accessControlService.requirePermission(requesterUserId, PermissionCode.PROJECT_CREATE);
+    @RequirePermissions(PermissionCode.MANAGE_PROJECTS)
+    async startFakeDataGeneration(@Request() request, @Query('userId') userId: string) {
+        const requesterUserId = request.user?.userId;
+        const requester = await this.accessControlService.requirePermission(requesterUserId, PermissionCode.MANAGE_PROJECTS);
         if (requester.role?.name !== 'ADMIN' && requester.id !== userId) {
             throw new ForbiddenException('Cannot start fake data generation for another user');
         }
@@ -127,14 +149,18 @@ export class ProjectController {
     }
 
     @Post('stop-fake-data')
-    async stopFakeDataGeneration(@Headers('x-user-id') requesterUserId: string) {
-        await this.accessControlService.requirePermission(requesterUserId, PermissionCode.PROJECT_CREATE);
+    @RequirePermissions(PermissionCode.MANAGE_PROJECTS)
+    async stopFakeDataGeneration(@Request() request) {
+        const requesterUserId = request.user?.userId;
+        await this.accessControlService.requirePermission(requesterUserId, PermissionCode.MANAGE_PROJECTS);
         this.projectService.stopFakeProjectGeneration();
         return { message: 'Fake data generation stopped successfully' };
     }
 
     @Get('user/:userId')
-    async getPaginatedByUserId(@Headers('x-user-id') requesterUserId: string, @Param('userId') userId: string, @Query('page') page: number=1) {
+    @RequirePermissions(PermissionCode.PROJECT_VIEW)
+    async getPaginatedByUserId(@Request() request, @Param('userId') userId: string, @Query('page') page: number=1) {
+        const requesterUserId = request.user?.userId;
         this.logger.log(`GET /projects/user/${userId}?page=${page} called`);
         await this.accessControlService.requirePermission(requesterUserId, PermissionCode.PROJECT_VIEW);
         await this.accessControlService.requireSelfOrAdmin(requesterUserId, userId);
@@ -143,7 +169,11 @@ export class ProjectController {
     }
 
     @Get('user/:userId/filter')
-    async getPaginatedFilteredByUserId(@Headers('x-user-id') requesterUserId: string, @Param('userId') userId: string, @Query('page') page: number=1, @Query('title') title: string='', @Query('category') category?: string, @Query('status') status?: string) {
+    @RequirePermissions(PermissionCode.PROJECT_VIEW)
+    async getPaginatedFilteredByUserId(@Request() request, @Param('userId') userId: string, @Query('page') page: number=1, @Query('title') title: string='', @Query('category') category?: string, @Query('status') status?: string) {
+        debugger;
+        const requesterUserId = request.user?.userId;
+        console.log(requesterUserId, userId);
         await this.accessControlService.requirePermission(requesterUserId, PermissionCode.PROJECT_VIEW);
         await this.accessControlService.requireSelfOrAdmin(requesterUserId, userId);
         const filter: ProjectFilter = {

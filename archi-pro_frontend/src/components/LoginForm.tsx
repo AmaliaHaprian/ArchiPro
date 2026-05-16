@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import './LoginForm.css';
 import { loginUser } from "../api";
+import { AuthContext } from "./AuthContext";
 
 function LoginForm({ onLoginUser }: { onLoginUser: (username: string, password: string) => void }) {
     const navigate = useNavigate();
@@ -11,6 +12,11 @@ function LoginForm({ onLoginUser }: { onLoginUser: (username: string, password: 
         email: '',
         password: ''
     });
+    const auth = useContext(AuthContext);
+    if (!auth) {
+        throw new Error('AuthContext is not available');
+    }
+
     const validateForm = () => {
         let valid = true;
         const newErrors = {
@@ -40,24 +46,13 @@ function LoginForm({ onLoginUser }: { onLoginUser: (username: string, password: 
         if (validateForm()) {
             try {
                 console.log('Logging in with:', { email, password });
-                const user = await loginUser(email, password);
-                console.log('Login response:', user);
-                if (!user) {
-                    setErrors(prev => ({ ...prev, email: 'Invalid email or password.' }));
-                    return;
-                }
-                const storedUser = {
-                    id: user.id,
-                    userId: user.id,
-                    username: user.username,
-                    email: user.email,
-                    role: user.role?.name ?? 'USER',
-                    permissions: user.role?.permissions?.map(permission => permission.code) ?? [],
-                };
-                // Store user in localStorage
-                localStorage.setItem('user', JSON.stringify(storedUser));
+                const payload  = await loginUser(email, password);
+
+                console.log('Login response:', payload);
+                auth.login(payload.access_token, payload.user);
+                
                 onLoginUser(email, password);
-                navigate('/overview'); // Redirect to overview after successful login
+                navigate('/overview');
             } catch (error) {
                 const message = error instanceof Error ? error.message : 'Login failed.';
                 setErrors(prev => ({ ...prev, email: message }));

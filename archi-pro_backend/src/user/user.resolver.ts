@@ -1,10 +1,11 @@
 import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
 import { UserService } from './user.service';
 import { User, CreateUserDto } from './user';
+import { AuthService } from 'src/auth/auth.service';
 
 @Resolver(() => User)
 export class UserResolver {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService, private readonly authService: AuthService) {}
 
   @Query(() => User, { nullable: true })
   async getUserById(@Args('id', { type: () => ID }) id: string) {
@@ -18,7 +19,7 @@ export class UserResolver {
 
   @Mutation(() => User)
   async registerUser(@Args('data') data: CreateUserDto) {
-    return this.userService.registerUser(data);
+    return this.authService.registerUser(data);
   }
 
   @Mutation(() => Boolean)
@@ -32,6 +33,6 @@ export class UserResolver {
     @Args('email') email: string,
     @Args('password') password: string,
   ) {
-    return this.userService.loginUser(email, password);
+    return this.authService.loginUser(email, password);
   }
 }
