@@ -20,9 +20,21 @@ export class AuthController {
         }
     
         @Post('login')
-        login(@Body() loginDto: { email: string; password: string }) {
+        login(@Body() loginDto: { email: string; password: string }, @Request() req: any) {
             const { email, password } = loginDto;
-            return this.authService.loginUser(email, password);
+            return this.authService.loginUser(email, password, req.headers?.origin);
+        }
+
+        @Post('forgot-password/request')
+        @HttpCode(200)
+        async requestPasswordReset(@Body() body: { email: string }) {
+            return await this.authService.requestPasswordReset(body.email);
+        }
+
+        @Post('forgot-password/reset')
+        @HttpCode(200)
+        async resetPassword(@Body() body: { token: string; newPassword: string }) {
+            return await this.authService.resetPassword(body.token, body.newPassword);
         }
 
         /**
@@ -56,7 +68,7 @@ export class AuthController {
         @UseGuards(MfaAuthGuard)
         @HttpCode(200)
         async verifyTotpLogin(@Request() req: any, @Body() verifyDto: VerifyTotpLoginDto) {
-            return await this.authService.verifyTotpLogin(req.user.sub, verifyDto.totpCode);
+            return await this.authService.verifyTotpLogin(req.user.sub, verifyDto.totpCode, req.headers?.origin);
         }
 
         /**
@@ -67,5 +79,31 @@ export class AuthController {
         @HttpCode(200)
         async verifyBackupCode(@Request() req: any, @Body() verifyDto: VerifyTotpBackupCodeDto) {
             return await this.authService.verifyBackupCode(req.user.sub, verifyDto.backupCode);
+        }
+
+        @Post('webauthn/setup/options')
+        @UseGuards(JwtAuthGuard)
+        @HttpCode(200)
+        async generateWebAuthnSetupOptions(@Request() req: any) {
+            return await this.authService.generateWebAuthnSetupOptions(req.user.sub, req.headers?.origin);
+        }
+
+        @Post('webauthn/setup/verify')
+        @UseGuards(JwtAuthGuard)
+        @HttpCode(200)
+        async verifyWebAuthnSetup(
+            @Request() req: any,
+            @Body() body: { challengeToken: string; response: any },
+        ) {
+            return await this.authService.verifyWebAuthnSetup(req.user.sub, body.challengeToken, body.response, req.headers?.origin);
+        }
+
+        @Post('webauthn/verify')
+        @HttpCode(200)
+        async verifyWebAuthnLogin(
+            @Request() req: any,
+            @Body() body: { challengeToken: string; response: any },
+        ) {
+            return await this.authService.verifyWebAuthnLogin(body.challengeToken, body.response, req.headers?.origin);
         }
 }

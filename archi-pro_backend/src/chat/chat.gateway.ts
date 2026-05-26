@@ -1,7 +1,7 @@
 import { InjectModel } from "@nestjs/mongoose";
 import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Model } from "mongoose";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { Message } from "./chat.schema";
 import { LoggingService } from "src/logging/logging.service";
 
@@ -27,4 +27,12 @@ export class ChatGateway {
       payload: { content: data.content },
     });
   }    
+
+    handleConnection(client: Socket) {
+      console.log('Socket connected:', client.id, 'from', client.handshake.address);
+    }
+
+    handleDisconnect(client: Socket) {
+      console.log('Socket disconnected:', client.id);
+    }
 }

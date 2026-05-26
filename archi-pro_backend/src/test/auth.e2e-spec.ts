@@ -4,6 +4,8 @@ import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
 import { CreateUserDto, User } from 'src/user/user';
 import { Permission, Role, RoleName } from 'src/user/access-control';
+import { TotpService } from 'src/auth/totp.service';
+import { WebAuthnService } from 'src/auth/webauthn.service';
 
 describe('Auth flow (mocked integration)', () => {
   let service: AuthService;
@@ -15,8 +17,26 @@ describe('Auth flow (mocked integration)', () => {
     getUserByEmail: jest.Mock;
   };
   let jwtService: { sign: jest.Mock };
+  let totpService: {
+    generateSecret: jest.Mock;
+    generateBackupCodes: jest.Mock;
+    verifyTotp: jest.Mock;
+  };
+  let webAuthnService: {
+    generateAuthenticationOptions: jest.Mock;
+    generateRegistrationOptions: jest.Mock;
+    verifyRegistration: jest.Mock;
+    verifyAuthentication: jest.Mock;
+  };
 
   const role = new Role(RoleName.USER, 'User role', [new Permission('PROJECT_VIEW' as any, 'View projects')]);
+  const expectedAuthUser = {
+    id: 'user-1',
+    username: 'alice',
+    email: 'alice@example.com',
+    role: 'USER',
+    permissions: ['PROJECT_VIEW'],
+  };
 
   beforeEach(async () => {
     userService = {
@@ -27,12 +47,25 @@ describe('Auth flow (mocked integration)', () => {
       getUserByEmail: jest.fn(),
     };
     jwtService = { sign: jest.fn().mockReturnValue('signed-token') };
+    totpService = {
+      generateSecret: jest.fn(),
+      generateBackupCodes: jest.fn(),
+      verifyTotp: jest.fn(),
+    };
+    webAuthnService = {
+      generateAuthenticationOptions: jest.fn(),
+      generateRegistrationOptions: jest.fn(),
+      verifyRegistration: jest.fn(),
+      verifyAuthentication: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: JwtService, useValue: jwtService },
         { provide: UserService, useValue: userService },
+        { provide: TotpService, useValue: totpService },
+        { provide: WebAuthnService, useValue: webAuthnService },
       ],
     }).compile();
 
@@ -56,8 +89,17 @@ describe('Auth flow (mocked integration)', () => {
       email: 'alice@example.com',
       role,
     }));
-    expect(result).toEqual(createdUser);
-    expect(result.password).not.toBe(dto.password);
+    expect(jwtService.sign).toHaveBeenCalledWith(expect.objectContaining({
+      sub: 'user-1',
+      email: 'alice@example.com',
+      role: 'USER',
+      permissions: ['PROJECT_VIEW'],
+    }));
+    expect(result).toEqual({
+      access_token: 'signed-token',
+      user: expectedAuthUser,
+    });
+    expect(createdUser.password).not.toBe(dto.password);
   });
 
   it('logs in a valid user and returns a token payload', async () => {
@@ -71,9 +113,13 @@ describe('Auth flow (mocked integration)', () => {
     expect(jwtService.sign).toHaveBeenCalledWith(expect.objectContaining({
       sub: 'user-1',
       email: 'alice@example.com',
-      role,
+      role: 'USER',
+      permissions: ['PROJECT_VIEW'],
     }));
-    expect(result).toEqual({ access_token: 'signed-token', user: existingUser });
+    expect(result).toEqual({
+      access_token: 'signed-token',
+      user: expectedAuthUser,
+    });
   });
 
   it('returns null for an invalid password', async () => {

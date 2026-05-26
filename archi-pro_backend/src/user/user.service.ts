@@ -61,6 +61,13 @@ export class UserService {
         });
     }
 
+    async getUserByPasswordResetTokenHash(passwordResetTokenHash: string) {
+        return await this.userRepository.findOne({
+            where: { password_reset_token_hash: passwordResetTokenHash },
+            relations: { role: { permissions: true } },
+        });
+    }
+
     async deleteUser(userId: string) {
         const user = await this.getUserById(userId);
         await this.loggingService.recordAction({

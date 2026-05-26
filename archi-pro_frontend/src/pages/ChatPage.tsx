@@ -12,7 +12,7 @@ type ChatMessage = {
 
 // Connect to the same origin so Vite's dev server can proxy the socket to the backend.
 // This avoids cross-origin TLS issues during development.
-const socket = io(window.location.origin, {
+const socket = io(API_BASE_URL, {
         path: '/socket.io',
         transports: ['websocket', 'polling'],
 });

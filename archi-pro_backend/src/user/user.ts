@@ -18,9 +18,21 @@ export class User {
     @Column({ nullable: true })
     totp_secret?: string;
     @Column({ default: false })
-    totp_enabled: boolean;
+    totp_enabled!: boolean;
     @Column('text', { nullable: true })
     totp_backup_codes?: string;
+    @Column({ type: 'varchar', nullable: true })
+    password_reset_token_hash?: string | null;
+    @Column({ type: 'timestamp', nullable: true })
+    password_reset_expires_at?: Date | null;
+    @Column({ nullable: true })
+    webauthn_credential_id?: string;
+    @Column('text', { nullable: true })
+    webauthn_public_key?: string;
+    @Column({ default: 0 })
+    webauthn_counter!: number;
+    @Column({ default: false })
+    webauthn_enabled!: boolean;
     @ManyToOne('Role', 'users', { nullable: false })
     @JoinColumn({ name: 'roleId', referencedColumnName: 'id' })
     role!: Role;

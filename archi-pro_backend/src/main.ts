@@ -3,12 +3,19 @@ import { AppModule } from './app.module';
 import * as fs from 'fs';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    httpsOptions: {
-      key: fs.readFileSync('certs/key.pem'),
-      cert: fs.readFileSync('certs/cert.pem'),
-    }
-  });
+  const useLocalHttps = (process.env.USE_LOCAL_HTTPS ?? '').toLowerCase() === 'true';
+
+  const createOptions = useLocalHttps && fs.existsSync('certs/key.pem') && fs.existsSync('certs/cert.pem')
+    ? {
+        httpsOptions: {
+          key: fs.readFileSync('certs/key.pem'),
+          cert: fs.readFileSync('certs/cert.pem'),
+        },
+      }
+    : undefined;
+
+  const app = createOptions ? await NestFactory.create(AppModule, createOptions) : await NestFactory.create(AppModule);
+
   const allowedOrigins = (process.env.CORS_ORIGINS ?? '')
     .split(',')
     .map((origin) => origin.trim())
@@ -17,7 +24,6 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin, callback) => {
-      // allow requests with no origin (e.g., curl, server-to-server)
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {

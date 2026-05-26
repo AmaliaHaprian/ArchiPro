@@ -3,9 +3,14 @@ import type { Project } from './Project';
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
+const socketOrigins = (process.env.WEBAUTHN_ORIGINS ?? process.env.CORS_ORIGINS ?? '')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+  
 @WebSocketGateway({
     cors: {
-        origin: 'http://localhost:5173',
+        origin: socketOrigins.length > 0 ? socketOrigins : true,
         methods: ['GET', 'POST'],
         credentials: true,
     },

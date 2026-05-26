@@ -17,8 +17,11 @@ export class MfaAuthGuard implements CanActivate {
 
         try {
             const decoded = this.jwtService.verify(token);
-            
-            if (!decoded.mfa_required) {
+
+            const isTotpMfaToken = decoded.mfa_required === true;
+            const isWebAuthnChallengeToken = decoded.purpose === 'authentication' || decoded.purpose === 'registration';
+
+            if (!isTotpMfaToken && !isWebAuthnChallengeToken) {
                 throw new UnauthorizedException('Invalid MFA token');
             }
 
