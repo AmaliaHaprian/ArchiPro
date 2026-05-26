@@ -1,5 +1,5 @@
 import io from 'socket.io-client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { API_BASE_URL, fetchChatMessages } from '../api';
 import './ChatPage.css';
 
@@ -10,17 +10,20 @@ type ChatMessage = {
     senderId?: string;
 };
 
-const socket = io(`${API_BASE_URL}/`, {
-    transports: ['websocket', 'polling'],
+// Connect to the same origin so Vite's dev server can proxy the socket to the backend.
+// This avoids cross-origin TLS issues during development.
+const socket = io(window.location.origin, {
+        path: '/socket.io',
+        transports: ['websocket', 'polling'],
 });
 
 function ChatPage() {
     const [currentUser, setCurrentUser] = useState<{ username: string; id: string; role: string; permissions: string[] } | null>(null);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
-    const [text, setText] = useState('');
+    const inputRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
-        const userStr = localStorage.getItem('user');
+        const userStr = localStorage.getItem('authUser') ?? localStorage.getItem('user');
         if (userStr) {
             const user = JSON.parse(userStr) as {
                 username?: string;
@@ -36,6 +39,8 @@ function ChatPage() {
                 permissions: user.permissions ?? [],
             });
             console.log(user);
+        } else {
+            console.warn('ChatPage could not find stored user/authUser; sendMessage will be blocked until login state is restored.');
         }
     }, []);
 
@@ -61,16 +66,34 @@ function ChatPage() {
         };
     }, []);
 
+    useEffect(() => {
+        const onConnect = () => console.log('socket connected', socket.id);
+        const onConnectError = (err: any) => console.error('socket connect_error', err);
+        socket.on('connect', onConnect);
+        socket.on('connect_error', onConnectError);
+        return () => {
+            socket.off('connect', onConnect);
+            socket.off('connect_error', onConnectError);
+        };
+    }, []);
+
     const sendMessage = () => {
-        if (text.trim() === '' || !currentUser) return;
+        const messageText = inputRef.current?.value ?? '';
+        console.log(currentUser, messageText);
+        if (messageText.trim() === '' || !currentUser) {
+            console.warn('sendMessage blocked', { text: messageText, currentUser });
+            return;
+        }
         const messageData = {
             sender: currentUser.username,
             senderId: currentUser.id,
-            content: text,
-            createdAt: new Date(),
+            content: messageText,
+            createdAt: new Date().toISOString(),
         };
         socket.emit('sendMessage', messageData);
-        setText('');
+        if (inputRef.current) {
+            inputRef.current.value = '';
+        }
     };
 
     return (
@@ -86,16 +109,15 @@ function ChatPage() {
                     </div>
                 ))}
             </div>
-            <div className="writing-area">
-            <input
-                type="text"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Type your message..."
-                className="chat-input"
-            />
-            <button onClick={sendMessage} className="send-button">Send</button>
-            </div>
+            <form className="writing-area" onSubmit={(e) => { e.preventDefault(); sendMessage(); }}>
+                <input
+                    ref={inputRef}
+                    type="text"
+                    placeholder="Type your message..."
+                    className="chat-input"
+                />
+                <button type="submit" className="send-button">Send</button>
+            </form>
         </div>
     )
 }

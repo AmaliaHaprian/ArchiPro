@@ -123,6 +123,12 @@
     margin: 15px 0;
 }
 
+.setup-actions {
+    display: grid;
+    gap: 12px;
+    margin-top: 20px;
+}
+
 .backup-actions button {
     flex: 1;
 }

@@ -175,12 +175,20 @@ function TotpSetupPage() {
                         <div className="success-icon">✓</div>
                         <h2>Two-Factor Authentication Enabled!</h2>
                         <p>Your account is now protected with two-factor authentication. You'll need to enter a code from your authenticator app each time you log in.</p>
-                        <button
-                            onClick={() => navigate('/overview')}
-                            className="primary-button"
-                        >
-                            Return to Dashboard
-                        </button>
+                        <div className="setup-actions">
+                            <button
+                                onClick={() => navigate('/security/webauthn-setup')}
+                                className="primary-button"
+                            >
+                                Continue to Face ID / Passkey setup
+                            </button>
+                            <button
+                                onClick={() => navigate('/overview')}
+                                className="secondary-button"
+                            >
+                                Return to Dashboard
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>

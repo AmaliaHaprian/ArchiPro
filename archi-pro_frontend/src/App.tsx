@@ -18,10 +18,12 @@ import ChatPage from './pages/ChatPage.tsx'
 import ObservationPage from './pages/ObservationPage.tsx'
 import UnauthorizedPage from './pages/UnauthorizedPage.tsx'
 import TotpSetupPage from './pages/TotpSetupPage.tsx'
+import WebAuthnSetupPage from './pages/WebAuthnSetupPage.tsx'
 import { syncQueuedActions } from './api.ts'
 import { useNetworkStatus } from './hooks/useNetworkStatus.ts'
 import { clearQueuedActions, getQueuedActions } from './hooks/useNetworkStatus.ts'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
+import ForgotPasswordPage from './pages/ForgotPasswordPage.tsx'
 
 function App() {
   const isOnline  = useNetworkStatus();
@@ -151,6 +153,7 @@ function App() {
       />
       <Route path="/register" element={<RegisterPage onRegisterUser={registerUser} />} />
       <Route path="/login" element={<LoginPage onLoginUser={loginUser} />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route
         path="/project/:projectId/shadow-path"
         element={
@@ -172,6 +175,14 @@ function App() {
         element={
           <ProtectedRoute>
             <TotpSetupPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/security/webauthn-setup"
+        element={
+          <ProtectedRoute>
+            <WebAuthnSetupPage />
           </ProtectedRoute>
         }
       />

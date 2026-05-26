@@ -134,3 +134,29 @@
     font-size: 14px;
     text-align: center;
 }
+
+.webauthn-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 20px 0 8px;
+    color: var(--text-secondary, #666);
+    text-align: center;
+}
+
+.webauthn-spinner {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 4px solid rgba(0, 123, 255, 0.15);
+    border-top-color: var(--primary-color, #007bff);
+    animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

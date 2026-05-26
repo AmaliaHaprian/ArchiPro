@@ -1,9 +1,9 @@
 import type { Action } from "./models/Action";
 import type { Project } from "./models/Project";
-import type { AuthPayload, CreateUserDto, User } from "./models/User";
+import type { AuthPayload, CreateUserDto, MfaRequiredPayload, User } from "./models/User";
 
 const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
-const fallbackApiBaseUrl = `${window.location.protocol}//${window.location.hostname}:3000`;
+const fallbackApiBaseUrl = '';
 
 export const API_BASE_URL = (configuredApiBaseUrl && configuredApiBaseUrl.length > 0
     ? configuredApiBaseUrl
@@ -221,7 +221,7 @@ export async function registerUser(user: CreateUserDto) {
     return await response.json();
 }
 
-export async function loginUser(username: string, password: string) : Promise<AuthPayload | { mfa_required: true; mfa_token: string; mfa_type: 'totp' }> {
+export async function loginUser(username: string, password: string) : Promise<AuthPayload | MfaRequiredPayload> {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
@@ -238,6 +238,7 @@ export async function loginUser(username: string, password: string) : Promise<Au
             mfa_required: true,
             mfa_token: data.mfa_token,
             mfa_type: data.mfa_type,
+            webauthn_options: data.webauthn_options,
         };
     }
 
@@ -253,6 +254,57 @@ export async function loginUser(username: string, password: string) : Promise<Au
         throw new Error('Network response was not ok');
     }
     return { access_token, user };
+}
+
+export async function generateWebAuthnSetupOptions(): Promise<{ options: Record<string, unknown>; challengeToken: string }> {
+    const response = await fetch(`${API_BASE_URL}/auth/webauthn/setup/options`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
+    });
+    if (!response.ok) {
+        throw new Error('Failed to generate WebAuthn setup options');
+    }
+    return await response.json();
+}
+
+export async function verifyWebAuthnSetup(challengeToken: string, responseData: unknown): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(`${API_BASE_URL}/auth/webauthn/setup/verify`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${getAuthToken()}`,
+        },
+        body: JSON.stringify({ challengeToken, response: responseData }),
+    });
+    if (!response.ok) {
+        throw new Error('Failed to verify WebAuthn setup');
+    }
+    return await response.json();
+}
+
+export async function verifyWebAuthnLogin(challengeToken: string, responseData: unknown): Promise<AuthPayload> {
+    const response = await fetch(`${API_BASE_URL}/auth/webauthn/verify`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ challengeToken, response: responseData }),
+    });
+    if (!response.ok) {
+        throw new Error('Failed to verify WebAuthn login');
+    }
+    const data = await response.json() as AuthPayload;
+    console.log('verifyWebAuthnLogin response', data);
+    const { access_token, user } = data;
+    if (access_token && user) {
+        localStorage.removeItem('token');
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('authToken', access_token);
+        localStorage.setItem('authUser', JSON.stringify(user));
+    }
+    return data;
 }
 
 export async function getUserById(userId: string) : Promise<User> {
@@ -304,6 +356,39 @@ export async function fetchChatMessages() {
     if (!response.ok) {
         throw new Error('Network response was not ok');
     }
+    return await response.json();
+}
+
+export async function requestPasswordReset(email: string): Promise<{ message: string; resetUrl?: string }> {
+    const response = await fetch(`${API_BASE_URL}/auth/forgot-password/request`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to request password reset');
+    }
+
+    return await response.json();
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(`${API_BASE_URL}/auth/forgot-password/reset`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token, newPassword }),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to reset password');
+    }
+
     return await response.json();
 }
 
@@ -415,7 +500,7 @@ export async function verifyTotpSetup(totpCode: string, backupCodes: string[]): 
     return await response.json();
 }
 
-export async function verifyTotpLogin(mfaToken: string, totpCode: string): Promise<{ access_token: string; user: User }> {
+export async function verifyTotpLogin(mfaToken: string, totpCode: string): Promise<AuthPayload | MfaRequiredPayload> {
     const response = await fetch(`${API_BASE_URL}/auth/totp/verify`, {
         method: 'POST',
         headers: {
@@ -427,18 +512,18 @@ export async function verifyTotpLogin(mfaToken: string, totpCode: string): Promi
     if (!response.ok) {
         throw new Error('Invalid TOTP code');
     }
-    const data = await response.json();
-    const { access_token, user } = data as { access_token: string; user: User };
-    if (access_token && user) {
+    const data = await response.json() as AuthPayload | MfaRequiredPayload;
+    console.log('verifyTotpLogin response', data);
+    if ('access_token' in data && 'user' in data && data.access_token && data.user) {
         localStorage.removeItem('token');
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('authToken', access_token);
-        localStorage.setItem('authUser', JSON.stringify(user));
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('authToken', data.access_token);
+        localStorage.setItem('authUser', JSON.stringify(data.user));
     }
-    return { access_token, user };
+    return data;
 }
 
-export async function verifyBackupCodeLogin(mfaToken: string, backupCode: string): Promise<{ access_token: string; user: User }> {
+export async function verifyBackupCodeLogin(mfaToken: string, backupCode: string): Promise<AuthPayload> {
     const response = await fetch(`${API_BASE_URL}/auth/totp/verify-backup`, {
         method: 'POST',
         headers: {
@@ -450,15 +535,14 @@ export async function verifyBackupCodeLogin(mfaToken: string, backupCode: string
     if (!response.ok) {
         throw new Error('Invalid backup code');
     }
-    const data = await response.json();
-    const { access_token, user } = data as { access_token: string; user: User };
-    if (access_token && user) {
+    const data = await response.json() as AuthPayload;
+    if (data.access_token && data.user) {
         localStorage.removeItem('token');
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('authToken', access_token);
-        localStorage.setItem('authUser', JSON.stringify(user));
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('authToken', data.access_token);
+        localStorage.setItem('authUser', JSON.stringify(data.user));
     }
-    return { access_token, user };
+    return data;
 }
 
 export async function getOverallStatisticsByUserId(userId: string) {

@@ -23,3 +23,10 @@ export interface AuthPayload {
     access_token: string;
     user: User;
 }
+
+export interface MfaRequiredPayload {
+    mfa_required: true;
+    mfa_type: 'totp' | 'webauthn';
+    mfa_token: string;
+    webauthn_options?: Record<string, unknown>;
+}

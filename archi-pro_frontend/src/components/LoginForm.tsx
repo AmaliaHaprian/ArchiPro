@@ -4,6 +4,7 @@ import './LoginForm.css';
 import { loginUser } from "../api";
 import { AuthContext } from "./AuthContext";
 import TotpVerificationModal from "./TotpVerificationModal";
+import type { AuthPayload, MfaRequiredPayload } from "../models/User";
 
 function LoginForm({ onLoginUser }: { onLoginUser: (username: string, password: string) => void }) {
     const navigate = useNavigate();
@@ -14,12 +15,17 @@ function LoginForm({ onLoginUser }: { onLoginUser: (username: string, password: 
         password: ''
     });
     const [mfaRequired, setMfaRequired] = useState(false);
+    const [mfaType, setMfaType] = useState<'totp' | 'webauthn'>('totp');
     const [mfaToken, setMfaToken] = useState('');
+    const [webauthnOptions, setWebauthnOptions] = useState<Record<string, unknown> | undefined>(undefined);
     const auth = useContext(AuthContext);
     if (!auth) {
         throw new Error('AuthContext is not available');
     }
 
+    const handleForgotPassword = () => {
+        navigate('/forgot-password');
+    }
     const validateForm = () => {
         let valid = true;
         const newErrors = {
@@ -55,11 +61,15 @@ function LoginForm({ onLoginUser }: { onLoginUser: (username: string, password: 
                 
                 // Check if MFA is required
                 if ('mfa_required' in payload && payload.mfa_required) {
-                    setMfaToken(payload.mfa_token);
+                    const mfaPayload = payload as MfaRequiredPayload;
+                    setMfaToken(mfaPayload.mfa_token);
+                    setMfaType(mfaPayload.mfa_type);
+                    setWebauthnOptions(mfaPayload.webauthn_options);
                     setMfaRequired(true);
                 } else {
+                    const authPayload = payload as AuthPayload;
                     // No MFA required, direct login
-                    auth.login(payload.access_token, payload.user);
+                    auth.login(authPayload.access_token, authPayload.user);
                     onLoginUser(email, password);
                     navigate('/overview');
                 }
@@ -71,10 +81,16 @@ function LoginForm({ onLoginUser }: { onLoginUser: (username: string, password: 
     };
 
     const handleMfaVerificationSuccess = (token: string, user: any) => {
-        auth.login(token, user);
-        onLoginUser(email, password);
-        setMfaRequired(false);
-        navigate('/overview');
+        if (token && user) {
+            auth.login(token, user);
+            onLoginUser(email, password);
+            setMfaRequired(false);
+            navigate('/overview');
+        } else {
+            console.error('handleMfaVerificationSuccess called without token/user', { token, user });
+            setMfaRequired(false);
+            setErrors(prev => ({ ...prev, email: 'MFA verification did not return authentication payload' }));
+        }
     };
 
     const handleMfaVerificationError = (error: string) => {
@@ -85,6 +101,8 @@ function LoginForm({ onLoginUser }: { onLoginUser: (username: string, password: 
         return (
             <TotpVerificationModal
                 mfaToken={mfaToken}
+                mfaType={mfaType}
+                webauthnOptions={webauthnOptions}
                 onVerificationSuccess={handleMfaVerificationSuccess}
                 onVerificationError={handleMfaVerificationError}
             />
@@ -121,6 +139,9 @@ function LoginForm({ onLoginUser }: { onLoginUser: (username: string, password: 
                     {errors.password && <span className="error">{errors.password}</span>}
                 </div>
                 <button type="submit">Login</button>
+                <p className="forgot-password-link">
+                    <span onClick={handleForgotPassword}>Forgot Password?</span>
+                </p>
             </form>
         </div>
     );
