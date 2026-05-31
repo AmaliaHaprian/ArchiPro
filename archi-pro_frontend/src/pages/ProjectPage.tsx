@@ -2,22 +2,19 @@ import SideBar from "../components/SideBar";
 import ProjectTopContainer from "../components/ProjectTopContainer";
 import type { Project } from "../models/Project";
 import { useParams } from 'react-router-dom';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link,  useNavigate } from 'react-router-dom';
 import './ProjectPage.css';
 import { useProjectTimeTracking } from '../hooks/useProjectTimeTracking';
-import { getProjectTimeSpent, formatTimeSpent, stopTimeTracking } from '../utils/timeTracking';
+import { getProjectTimeSpent, stopTimeTracking } from '../utils/timeTracking';
 import { useEffect, useState } from 'react';
 import { fetchProjectById } from "../api";
 import { deleteProject } from "../api";
-import { queueAction, useNetworkStatus } from "../hooks/useNetworkStatus";
-import type { Action } from "../models/Action";
 
 function ProjectPage({ projects, onDeleteProject, onUpdateProject }: { projects: Project[]; onDeleteProject: (projectId: string) => void; onUpdateProject?: (project: Project) => void; }) {
     const { id } = useParams();
     const navigate = useNavigate();
     
     const [project, setProject] = useState<Project | null>(null);
-    const [timeSpent, setTimeSpent] = useState<number>(0);
     
     useEffect(() => {
         const fetchProject = async () => {
@@ -71,6 +68,7 @@ function ProjectPage({ projects, onDeleteProject, onUpdateProject }: { projects:
     }
 
     const handleDeleteProject = () => {
+        onDeleteProject(project.id);
         deleteProject(project.id)
         navigate('/overview');
     };

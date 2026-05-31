@@ -4,8 +4,7 @@ import type { Project, File } from '../models/Project';
 import './DesignPage.css';
 import SideBar from '../components/SideBar';
 import { fetchProjectById } from '../api';
-
-type FileCategory = 'Sketches' | 'Plans' | 'Renders';
+import type { DesignStage } from '../models/Project';
 
 function DesignPage({
     projects,
@@ -14,6 +13,7 @@ function DesignPage({
     projects: Project[];
     updateProject: (project: Project) => void;
 }) {
+    type FileCategory = 'Sketches' | 'Plans' | 'Renders';
     const { projectId: id } = useParams<{ projectId: string }>();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<FileCategory>('Sketches');
@@ -27,7 +27,12 @@ function DesignPage({
               const result = await fetchProjectById(id);
               setProject(result);
             } catch (error) {
+                const projectInState = projects.find((p) => p.id === id);
+                if (projectInState) {
+                    setProject(projectInState);
+                } else {
               console.error('Error fetching project:', error);
+            }
             }
           }
         };
@@ -38,20 +43,16 @@ function DesignPage({
         return <div className="design-page">Project not found</div>;
     }
 
-    const stageData = project.stageData?.design || {
-        siteName: '',
-        address: '',
-        siteArea: '',
-        type: '',
-        notes: '',
-        images: [],
+    const stageData : DesignStage = project.stageData?.design || {
+        projectId: id ?? '',
         files: {
             Sketches: [],
             Plans: [],
             Renders: []
         },
         toDoList: [],
-        documentNotes: ''
+        notes: '',
+
     };
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,7 +72,7 @@ function DesignPage({
                     [activeTab]: [...(stageData.files?.[activeTab] || []), newFile]
                 };
 
-                const updatedProject = {
+                const updatedProject: Project = {
                     ...project,
                     stageData: {
                         ...project.stageData,
@@ -92,7 +93,7 @@ function DesignPage({
             [activeTab]: stageData.files?.[activeTab]?.filter((_, i) => i !== index) || []
         };
 
-        const updatedProject = {
+        const updatedProject: Project = {
             ...project,
             stageData: {
                 ...project.stageData,
@@ -117,7 +118,7 @@ function DesignPage({
                 ...project.stageData,
                 design: {
                     ...stageData,
-                    todo: todoArray
+                    toDoList: todoArray
                 }
             }
         };

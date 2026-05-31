@@ -5,15 +5,12 @@ function toDateInputValue(dateString: string): string {
     if (isNaN(d.getTime())) return '';
     return d.toISOString().slice(0, 10);
 }
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import './EditForm.css';
 import { useNavigate } from 'react-router-dom';
 import type { Project, ProjectCategory } from '../models/Project';
 import { ProjectCategory as ProjectCategoryValues } from '../models/Project';
 import { updateProject } from '../api';
-import { fetchProjectById } from '../api';
-import { queueAction, useNetworkStatus } from '../hooks/useNetworkStatus';
-import type { Action } from '../models/Action';
 
 function EditForm({ project ,  onUpdateProject }: { project: Project;  onUpdateProject: (updatedProject: Project) => void }) {
     const navigate = useNavigate();
@@ -91,6 +88,7 @@ function EditForm({ project ,  onUpdateProject }: { project: Project;  onUpdateP
         //     navigate('/project/' + project.id, { state: { project: updatedProject } });
         //     return;
         // }
+        onUpdateProject({ ...project, ...updatedProject });
         updateProject(project.id, updatedProject)
         navigate('/project/' + project.id, { state: { project: updatedProject } });
     }

@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { io, Socket} from "socket.io-client";
+import { createContext, useEffect, useState } from "react";
+import { io } from "socket.io-client";
 import { API_BASE_URL } from "../api";
 import { fetchProjects } from "../api";
 

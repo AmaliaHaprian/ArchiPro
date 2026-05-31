@@ -1,7 +1,6 @@
 import { useState, Suspense } from 'react';
 import type { Project } from '../models/Project';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { CSSProperties } from 'react';
 import SunCalc from 'suncalc';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
@@ -43,7 +42,12 @@ function ShadowPath({projects} : {projects: Project[]}) {
                   const result = await fetchProjectById(id);
                   setProject(result);
                 } catch (error) {
+                    const projectFromList = projects.find((p) => p.id === id);
+          if (projectFromList) {
+            setProject(projectFromList);
+          } else {
                   console.error('Error fetching project:', error);
+          }
                 }
               }
             };

@@ -2,9 +2,6 @@ import type { Project } from '../models/Project';
 import { useNavigate } from 'react-router-dom';
 import './ProjectTopContainer.css';
 import calendarIcon from '../assets/calendar.png';
-import { queueAction } from '../hooks/useNetworkStatus';
-import type { Action } from '../models/Action';
-import { useNetworkStatus } from '../hooks/useNetworkStatus';
 
 function ProjectTopContainer({
     project,

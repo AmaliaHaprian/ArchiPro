@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import type { Project } from '../models/Project';
+import type { Project, ResearchStage } from '../models/Project';
 import './ResearchPage.css';
 import SideBar from '../components/SideBar';
 import { fetchProjectById } from '../api';
@@ -25,7 +25,12 @@ function ResearchPage({
               const result = await fetchProjectById(id);
               setProject(result);
             } catch (error) {
+                const projectFromList = projects.find((p) => p.id === id);
+          if (projectFromList) {
+            setProject(projectFromList);
+          } else {
               console.error('Error fetching project:', error);
+          }
             }
           }
         };
@@ -35,7 +40,8 @@ function ResearchPage({
         return <div className="research-page">Project not found</div>;
     }
 
-    const stageData = project.stageData?.research || {
+    const stageData : ResearchStage = project.stageData?.research || {
+        projectId: id ?? '',
         images: []
     };
 

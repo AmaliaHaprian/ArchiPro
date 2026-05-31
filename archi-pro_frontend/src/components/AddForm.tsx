@@ -1,11 +1,8 @@
 import './AddForm.css';
 import { useNavigate } from 'react-router-dom';
-import { use, useState } from 'react';
+import { useState } from 'react';
 import { saveProject } from '../api';
-import type { Project } from '../models/Project';
 import { ProjectCategory } from '../models/Project';
-import { useNetworkStatus, queueAction } from '../hooks/useNetworkStatus';
-import type { Action } from '../models/Action';
 
 function AddForm({ onAddProject }: { onAddProject: (project: any) => void }) {
     const navigate = useNavigate();

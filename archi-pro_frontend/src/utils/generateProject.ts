@@ -1,8 +1,10 @@
 import type { Project } from '../models/Project';
+import { ProjectStatus, ProjectCategory, ProjectStage  } from '../models/Project';
 
 function GenerateProject() {
     const project: Project = {
         id: Date.now().toString(),
+        userId: 'user-' + Math.floor(Math.random() * 1000),
         title: chooseRandomProjectName(),
         status: chooseRandomProjectStatus(),
         category: chooseRandomProjectCategory(),
@@ -32,13 +34,13 @@ function chooseRandomProjectName() {
 }
 
 function chooseRandomProjectStatus() {
-    const projectStatuses = ['Planning', 'In progress', 'Done'];
+    const projectStatuses = [ProjectStatus.PLANNING, ProjectStatus.IN_PROGRESS, ProjectStatus.DONE];
     const randomIndex = Math.floor(Math.random() * projectStatuses.length);
     return projectStatuses[randomIndex];
 }
 
 function chooseRandomProjectCategory() {
-    const projectCategories = ['Residential', 'Commercial', 'Mixed-use', 'Cultural', 'Infrastructure', 'Landscape', 'Urban'];
+    const projectCategories = [ProjectCategory.RESIDENTIAL, ProjectCategory.CULTURAL, ProjectCategory.MIXED_USE, ProjectCategory.CULTURAL, ProjectCategory.INFRASTRUCTURE, ProjectCategory.LANDSCAPE, ProjectCategory.URBAN];
     const randomIndex = Math.floor(Math.random() * projectCategories.length);
     return projectCategories[randomIndex];
 }
@@ -48,7 +50,7 @@ function chooseRandomProjectProgress() {
 }
 
 function chooseRandomProjectStage() {
-    const projectStages = ['Project brief', 'Site analysis', 'Research', 'Design', 'Visualization'];
+    const projectStages = [ProjectStage.PROJECT_BRIEF, ProjectStage.SITE_ANALYSIS, ProjectStage.RESEARCH, ProjectStage.DESIGN, ProjectStage.VISUALIZATION];
     const randomIndex = Math.floor(Math.random() * projectStages.length);
     return projectStages[randomIndex];
 }

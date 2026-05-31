@@ -1,10 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import type { Project } from '../models/Project';
+import type { Project, SiteAnalysisStage } from '../models/Project';
 import './ProjectVisualizationPage.css';
 import SideBar from '../components/SideBar';
 import { useEffect, useState } from 'react';
 import { fetchProjectById } from '../api';
-import { updateProject } from '../api';
 
 function SiteAnalysisPage({
     projects,
@@ -25,7 +24,12 @@ function SiteAnalysisPage({
               const result = await fetchProjectById(id);
               setProject(result);
             } catch (error) {
+                const projectFromList = projects.find((p) => p.id === id);
+          if (projectFromList) {
+            setProject(projectFromList);
+          } else {
               console.error('Error fetching project:', error);
+          }
             }
           }
         };
@@ -36,7 +40,8 @@ function SiteAnalysisPage({
         return <div className="site-analysis-page">Project not found</div>;
     }
 
-    const stageData = project.stageData?.siteAnalysis || {
+    const stageData : SiteAnalysisStage = project.stageData?.siteAnalysis || {
+        projectId: id ?? '',
         siteName: '',
         address: '',
         siteArea: '',

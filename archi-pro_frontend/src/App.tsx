@@ -87,7 +87,7 @@ function App() {
   }
 
   const loginUser = (username: string, password: string) => {
-    const user = users.find((u) => u.username === username && u.password === password);
+    const user = users.find((u) => u.username === username && password);
     return user ? user : null;
   }
   

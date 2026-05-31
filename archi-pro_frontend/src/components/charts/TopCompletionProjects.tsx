@@ -34,7 +34,7 @@ function TopCompletionProjects (props : { refreshKey: number, userId: string }) 
       
       { topProjects.length > 0 ? (
         <ol style={{ paddingLeft: '20px', lineHeight: '2' }}>
-          {topProjects.map((project, index) => (
+          {topProjects.map((project, _) => (
             <li key={project.id} style={{ fontWeight: '500', color: '#000000' }}>
               {project.title} 
               <span style={{ fontSize: '0.8em', color: '#000000', marginLeft: '10px' }}>

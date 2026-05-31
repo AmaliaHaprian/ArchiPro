@@ -2,13 +2,20 @@ import type { Action } from "./models/Action";
 import type { Project } from "./models/Project";
 import type { AuthPayload, CreateUserDto, MfaRequiredPayload, User } from "./models/User";
 
-const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
-const fallbackApiBaseUrl = '';
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim() ?? '';
 
-export const API_BASE_URL = (configuredApiBaseUrl && configuredApiBaseUrl.length > 0
-    ? configuredApiBaseUrl
-    : fallbackApiBaseUrl
-).replace(/\/+$/, '');
+function normalizeApiBaseUrl(rawUrl: string): string {
+    if (rawUrl.length === 0) return '';
+
+    if (/^https?:\/\//i.test(rawUrl)) {
+        return rawUrl.replace(/\/+$/, '');
+    }
+
+    // Handle values like "example.com" by promoting them to HTTPS.
+    return `https://${rawUrl}`.replace(/\/+$/, '');
+}
+
+export const API_BASE_URL = normalizeApiBaseUrl(configuredApiBaseUrl);
 
 function getAuthToken(): string | null {
     return localStorage.getItem('authToken') ?? localStorage.getItem('token');

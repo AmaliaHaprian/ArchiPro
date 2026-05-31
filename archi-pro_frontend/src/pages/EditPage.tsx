@@ -15,7 +15,12 @@ function EditPage({ projects, onUpdateProject }: { projects: Project[]; onUpdate
           const result = await fetchProjectById(id);
           setProject(result);
         } catch (error) {
+          const projectFromList = projects.find((p) => p.id === id);
+          if (projectFromList) {
+            setProject(projectFromList);
+          } else {
           console.error('Error fetching project:', error);
+          }
         }
       }
     };
